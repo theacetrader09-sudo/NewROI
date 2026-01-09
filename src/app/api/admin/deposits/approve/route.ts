@@ -45,10 +45,10 @@ export async function PATCH(req: Request) {
                 data: {
                     userId: investment.userId,
                     type: "DEPOSIT",
-                    amount: investment.amount,
-                    previousBalance: prevBalance,
+                    amount: Number(investment.amount),
+                    previousBalance: Number(prevBalance),
                     newBalance: newBalance,
-                    description: `Deposit of $${investment.amount} approved. Credited to wallet.`,
+                    description: `Deposit of $${Number(investment.amount)} approved. Credited to wallet.`,
                     status: "COMPLETED",
                     referenceId: investment.id
                 }
