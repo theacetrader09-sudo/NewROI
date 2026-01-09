@@ -9,7 +9,14 @@ const prismaClientSingleton = () => {
     } else {
         console.error("[PRISMA] DATABASE_URL is not defined!");
     }
-    return new PrismaClient();
+
+    return new PrismaClient({
+        datasources: {
+            db: {
+                url: process.env.DATABASE_URL,
+            },
+        },
+    });
 };
 
 declare global {
