@@ -1,19 +1,21 @@
 import { PrismaClient } from "@prisma/client";
 
 const prismaClientSingleton = () => {
-    const url = process.env.DATABASE_URL;
+    // Prefer specific pooler URL, fallback to standard DATABASE_URL
+    const url = process.env.SUPABASE_POOLER_URL || process.env.DATABASE_URL;
+
     if (url) {
         // Redact password for logging
         const redacted = url.replace(/:([^:@]+)@/, ":****@");
         console.log(`[PRISMA] Initializing client with URL: ${redacted}`);
     } else {
-        console.error("[PRISMA] DATABASE_URL is not defined!");
+        console.error("[PRISMA] No database URL defined!");
     }
 
     return new PrismaClient({
         datasources: {
             db: {
-                url: process.env.DATABASE_URL,
+                url: url,
             },
         },
     });
