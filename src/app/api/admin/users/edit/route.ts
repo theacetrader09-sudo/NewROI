@@ -28,7 +28,7 @@ export async function PATCH(req: Request) {
                     const user = await tx.user.findUnique({ where: { id: userId } });
                     if (!user) throw new Error("User not found");
 
-                    const newBalance = user.balance + adjustAmount;
+                    const newBalance = Number(user.balance) + adjustAmount;
                     if (newBalance < 0) throw new Error("Adjustment would result in negative balance");
 
                     await tx.user.update({
@@ -41,7 +41,7 @@ export async function PATCH(req: Request) {
                             userId: userId,
                             type: adjustAmount > 0 ? "DEPOSIT" : "WITHDRAWAL",
                             amount: Math.abs(adjustAmount),
-                            previousBalance: user.balance,
+                            previousBalance: Number(user.balance),
                             newBalance: newBalance,
                             description: `Admin adjustment: ${reason || "No reason provided"}`,
                             status: "COMPLETED",
