@@ -31,7 +31,7 @@ export async function POST(req: Request) {
                 where: { id: (session.user as any).id },
             });
 
-            if (!user || user.balance < withdrawAmount) {
+            if (!user || Number(user.balance) < withdrawAmount) {
                 throw new Error("Insufficient balance for this withdrawal");
             }
 
@@ -47,8 +47,8 @@ export async function POST(req: Request) {
                     userId: user.id,
                     type: "WITHDRAWAL",
                     amount: withdrawAmount,
-                    previousBalance: user.balance,
-                    newBalance: updatedUser.balance,
+                    previousBalance: Number(user.balance),
+                    newBalance: Number(updatedUser.balance),
                     description: `Withdrawal request to ${walletAddress}`,
                     status: "PENDING",
                     referenceId: walletAddress, // Store destination temporarily
