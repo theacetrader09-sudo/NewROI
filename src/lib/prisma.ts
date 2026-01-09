@@ -1,8 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 
 const prismaClientSingleton = () => {
-    // Prefer specific pooler URL, fallback to standard DATABASE_URL
-    const url = process.env.SUPABASE_POOLER_URL || process.env.DATABASE_URL;
+    let url = process.env.SUPABASE_POOLER_URL || process.env.DATABASE_URL;
+
+    // HARDCODE FALLBACK FOR PRODUCTION TO FIX CONNECTION ISSUE
+    if (process.env.NODE_ENV === 'production' && !url?.includes("pooler.supabase.com")) {
+        console.log("[PRISMA] Applying hardcoded Production Pooler URL override");
+        url = "postgresql://postgres.fyatcvetnrpgclpbydmr:vishurathore%4072@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true";
+    }
 
     if (url) {
         // Redact password for logging
