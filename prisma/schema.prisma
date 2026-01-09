@@ -1,0 +1,110 @@
+// This is your Prisma schema file for PRODUCTION (PostgreSQL)
+// Switch to this when deploying to Supabase
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"  // Changed from sqlite
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("USER") // USER or SUPERADMIN
+  
+  balance       Decimal  @default(0) @db.Decimal(18, 2)  // Changed from Float
+  referralCode  String   @unique
+  uplineId      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  upline    User?  @relation("Referrals", fields: [uplineId], references: [id])
+  referrals User[] @relation("Referrals")
+  
+  investments  Investment[]
+  transactions Transaction[]
+  roiLogs      RoiLog[]
+
+  @@index([email])
+  @@index([referralCode])
+  @@index([uplineId])
+}
+
+model Investment {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Decimal  @db.Decimal(18, 2)  // Changed from Float
+  roiRate   Decimal  @db.Decimal(5, 2)   // Changed from Float
+  status    String   // PENDING, ACTIVE, COMPLETED
+  txid      String?  @unique
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User      @relation(fields: [userId], references: [id])
+  roiLogs RoiLog[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([txid])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // DEPOSIT, WITHDRAWAL, ROI, COMMISSION
+  amount      Decimal  @db.Decimal(18, 2)  // Changed from Float
+  
+  previousBalance Decimal  @db.Decimal(18, 2)  // Changed from Float
+  newBalance      Decimal  @db.Decimal(18, 2)  // Changed from Float
+  
+  description String
+  status      String   // PENDING, COMPLETED, REJECTED
+  referenceId String?
+  
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model RoiLog {
+  id           String   @id @default(cuid())
+  userId       String
+  investmentId String
+  amount       Decimal  @db.Decimal(18, 2)  // Changed from Float
+  date         String   // YYYY-MM-DD format
+  
+  createdAt DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id])
+  investment Investment @relation(fields: [investmentId], references: [id])
+
+  @@unique([userId, investmentId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+model SystemSettings {
+  id        String   @id @default(cuid())
+  
+  dailyRoiPercent Decimal  @default(1.0) @db.Decimal(5, 2)  // Changed from Float
+  levelConfig     String   // JSON array of 10 percentages
+  adminWallet     String?
+  
+  maintenanceMode Boolean @default(false)
+  roiHoliday      Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
