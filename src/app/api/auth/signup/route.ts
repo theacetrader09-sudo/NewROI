@@ -57,7 +57,15 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: "User registered successfully", userId: user.id }, { status: 201 });
 
     } catch (error: any) {
-        console.error("SIGNUP_ERROR:", error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        console.error("SIGNUP_CRITICAL_ERROR:", {
+            message: error.message,
+            stack: error.stack,
+            code: error.code,
+            meta: error.meta
+        });
+        return NextResponse.json({
+            error: "Internal server error",
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        }, { status: 500 });
     }
 }
