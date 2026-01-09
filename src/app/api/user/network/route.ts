@@ -33,7 +33,7 @@ export async function GET() {
 
             const tree = await Promise.all(referrals.map(async (user) => {
                 const children = await getTree(user.id, currentLevel + 1);
-                const totalInvested = user.investments.reduce((sum, inv) => sum + inv.amount, 0);
+                const totalInvested = user.investments.reduce((sum, inv) => sum + Number(inv.amount), 0);
 
                 return {
                     id: user.id,
