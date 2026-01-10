@@ -25,10 +25,13 @@ export async function PATCH(req: Request) {
                 throw new Error("Invalid investment or already processed");
             }
 
-            // 2. Update Investment Status to COMPLETED (marks deposit as approved)
+            // 2. Update Investment Status to ACTIVE and mark as manually approved
             const updatedInvestment = await tx.investment.update({
                 where: { id },
-                data: { status: "COMPLETED" }
+                data: {
+                    status: "ACTIVE",
+                    approvalMethod: "MANUAL"
+                }
             });
 
             // 3. Credit User's Wallet Balance

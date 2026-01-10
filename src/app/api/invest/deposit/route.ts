@@ -64,6 +64,7 @@ export async function POST(req: Request) {
                     txid: txid,
                     status: "ACTIVE",
                     roiRate: 1.0,
+                    approvalMethod: "AUTO",
                 }
             });
 

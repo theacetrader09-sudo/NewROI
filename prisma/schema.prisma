@@ -38,12 +38,13 @@ model User {
 }
 
 model Investment {
-  id        String   @id @default(cuid())
-  userId    String
-  amount    Decimal  @db.Decimal(18, 2)  // Changed from Float
-  roiRate   Decimal  @db.Decimal(5, 2)   // Changed from Float
-  status    String   // PENDING, ACTIVE, COMPLETED
-  txid      String?  @unique
+  id             String   @id @default(cuid())
+  userId         String
+  amount         Decimal  @db.Decimal(18, 2)
+  roiRate        Decimal  @db.Decimal(5, 2)
+  status         String   // PENDING, ACTIVE, COMPLETED
+  txid           String?  @unique
+  approvalMethod String?  // AUTO, MANUAL - tracks how deposit was approved
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
