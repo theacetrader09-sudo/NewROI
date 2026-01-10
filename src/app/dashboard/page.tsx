@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
     TrendingUp,
@@ -9,7 +9,7 @@ import {
     Package,
     ArrowUpRight,
     ArrowDownLeft,
-    Bell,
+    LogOut,
     Copy,
     Clock,
     Home,
@@ -140,8 +140,13 @@ export default function ModernDashboard() {
                             </div>
                         </div>
                     </div>
-                    <button className="w-10 h-10 md:w-11 md:h-11 rounded-xl border border-glass-border bg-secondary flex items-center justify-center hover:bg-primary-light transition-colors" style={{ color: 'var(--text-primary)' }}>
-                        <Bell size={20} />
+                    <button
+                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        className="w-10 h-10 md:w-11 md:h-11 rounded-xl border border-glass-border bg-secondary flex items-center justify-center hover:bg-red-500/20 transition-colors"
+                        style={{ color: 'var(--accent-red)' }}
+                        title="Logout"
+                    >
+                        <LogOut size={20} />
                     </button>
                 </div>
 

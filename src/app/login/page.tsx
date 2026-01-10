@@ -9,6 +9,7 @@ function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [formData, setFormData] = useState({ email: "", password: "" });
+    const [rememberMe, setRememberMe] = useState(true);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -29,6 +30,7 @@ function LoginForm() {
                 redirect: false,
                 email: formData.email,
                 password: formData.password,
+                rememberMe: rememberMe.toString(),
             });
 
             if (result?.error) {
@@ -103,7 +105,7 @@ function LoginForm() {
                         />
                     </div>
 
-                    <div style={{ marginBottom: '24px' }}>
+                    <div style={{ marginBottom: '16px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Password</label>
                         <input
                             type="password"
@@ -113,6 +115,37 @@ function LoginForm() {
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         />
+                    </div>
+
+                    {/* Remember Me Checkbox */}
+                    <div style={{
+                        marginBottom: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                    }}>
+                        <input
+                            type="checkbox"
+                            id="rememberMe"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                            style={{
+                                width: '18px',
+                                height: '18px',
+                                accentColor: 'var(--accent-blue)',
+                                cursor: 'pointer'
+                            }}
+                        />
+                        <label
+                            htmlFor="rememberMe"
+                            style={{
+                                fontSize: '0.85rem',
+                                color: 'var(--text-secondary)',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Remember me for 30 days
+                        </label>
                     </div>
 
                     <button
