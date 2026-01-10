@@ -17,6 +17,7 @@ import {
     BarChart3
 } from "lucide-react";
 import Link from "next/link";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 
 export default function ModernDashboard() {
     const { data: session } = useSession();
@@ -84,11 +85,7 @@ export default function ModernDashboard() {
     };
 
     if (loading || !user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-primary">
-                <div className="w-10 h-10 border-3 border-glass-border border-t-accent-blue rounded-full animate-spin"></div>
-            </div>
-        );
+        return <DashboardSkeleton />;
     }
 
     const formatTime = (num: number) => num.toString().padStart(2, '0');
