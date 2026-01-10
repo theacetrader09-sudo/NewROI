@@ -62,21 +62,39 @@ export default function DepositPage() {
                     </h3>
 
                     <div style={{ marginBottom: '24px' }}>
-                        <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>ADMIN WALLET (USDT BEP20)</label>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>DEPOSIT ADDRESS (USDT BEP20)</label>
                         <div className="glass" style={{
                             padding: '16px',
                             borderRadius: '12px',
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            wordBreak: 'break-all'
+                            alignItems: 'flex-start',
+                            gap: '12px'
                         }}>
-                            <code style={{ fontSize: '0.85rem' }}>{ADMIN_WALLET}</code>
+                            <code style={{
+                                fontSize: '0.85rem',
+                                wordBreak: 'break-all',
+                                flex: 1,
+                                lineHeight: '1.5'
+                            }}>{ADMIN_WALLET}</code>
                             <button
                                 onClick={handleCopy}
-                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: copied ? 'var(--accent-green)' : 'var(--text-secondary)' }}
+                                style={{
+                                    background: copied ? 'rgba(16, 185, 129, 0.1)' : 'rgba(102, 126, 234, 0.1)',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: copied ? 'var(--accent-green)' : 'var(--accent-blue)',
+                                    padding: '8px 12px',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    flexShrink: 0,
+                                    transition: 'all 0.2s'
+                                }}
                             >
-                                {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
+                                {copied ? <><CheckCircle size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
                             </button>
                         </div>
                     </div>
