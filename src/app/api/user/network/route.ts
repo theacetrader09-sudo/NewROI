@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
@@ -13,27 +15,34 @@ export async function GET() {
 
         const userId = (session.user as any).id;
 
-        // Helper function to fetch kids recursively up to 10 levels
-        async function getTree(parentId: string, currentLevel: number): Promise<any> {
+        // OPTIMIZED: Fetch ALL users with their investments in a SINGLE query
+        const allUsers = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                uplineId: true,
+                createdAt: true,
+                investments: {
+                    where: { status: "ACTIVE" },
+                    select: { amount: true }
+                }
+            }
+        });
+
+        // Build lookup map for O(1) access
+        const userMap = new Map(allUsers.map(u => [u.id, u]));
+
+        // Build tree in memory (much faster than recursive DB calls)
+        function buildTree(parentId: string, currentLevel: number): any[] {
             if (currentLevel > 10) return [];
 
-            const referrals = await prisma.user.findMany({
-                where: { uplineId: parentId },
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    createdAt: true,
-                    investments: {
-                        where: { status: "ACTIVE" },
-                        select: { amount: true }
-                    }
-                }
-            });
+            const children = allUsers.filter(u => u.uplineId === parentId);
 
-            const tree = await Promise.all(referrals.map(async (user) => {
-                const children = await getTree(user.id, currentLevel + 1);
-                const totalInvested = user.investments.reduce((sum, inv) => sum + Number(inv.amount), 0);
+            return children.map(user => {
+                const totalInvested = user.investments.reduce(
+                    (sum, inv) => sum + Number(inv.amount), 0
+                );
 
                 return {
                     id: user.id,
@@ -41,14 +50,12 @@ export async function GET() {
                     email: user.email,
                     level: currentLevel,
                     invested: totalInvested,
-                    children: children
+                    children: buildTree(user.id, currentLevel + 1)
                 };
-            }));
-
-            return tree;
+            });
         }
 
-        const networkData = await getTree(userId, 1);
+        const networkData = buildTree(userId, 1);
 
         return NextResponse.json(networkData);
 
