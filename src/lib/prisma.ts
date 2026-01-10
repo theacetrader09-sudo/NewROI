@@ -4,7 +4,7 @@ const prismaClientSingleton = () => {
     // UNCONDITIONAL HARDCODE to guarantee correct connection
     // This is to debug why Vercel persists in using the wrong URL
     console.log("!!! FORCING SUPABASE POOLER URL !!!");
-    const url = "postgresql://postgres.fyatcvetnrpgclpbydmr:vishurathore%4072@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true";
+    const url = "postgresql://postgres.fyatcvetnrpgclpbydmr:vishurathore%4072@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
     // Log the URL we are using (redacted)
     const redacted = url.replace(/:([^:@]+)@/, ":****@");
