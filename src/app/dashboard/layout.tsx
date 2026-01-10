@@ -71,22 +71,21 @@ export default function DashboardLayout({
               bottom: 0;
               left: 0;
               right: 0;
-              height: calc(76px + env(safe-area-inset-bottom));
-              background: linear-gradient(180deg, rgba(10, 10, 20, 0.98) 0%, rgba(15, 15, 25, 0.98) 100%);
-              border-top: 1.5px solid rgba(102, 126, 234, 0.25);
+              height: calc(80px + env(safe-area-inset-bottom));
+              background: rgba(10, 10, 18, 0.95);
+              border-top: 1px solid rgba(255, 255, 255, 0.08);
               display: flex;
-              justify-content: flex-start;
+              justify-content: center;
               align-items: center;
-              padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;
+              padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) 12px;
               z-index: 100;
-              backdrop-filter: blur(30px);
-              -webkit-backdrop-filter: blur(30px);
+              backdrop-filter: blur(20px);
+              -webkit-backdrop-filter: blur(20px);
               overflow-x: auto;
               overflow-y: hidden;
               -webkit-overflow-scrolling: touch;
               scrollbar-width: none;
-              gap: 16px;
-              box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.4), 0 -1px 10px rgba(102, 126, 234, 0.1);
+              gap: 12px;
             }
             
             .mobile-bottom-nav::-webkit-scrollbar {
@@ -95,57 +94,80 @@ export default function DashboardLayout({
 
             .mobile-nav-item {
               flex: 0 0 auto;
-              min-width: 70px;
-              max-width: 85px;
               display: flex;
               flex-direction: column;
               align-items: center;
               justify-content: center;
-              gap: 6px;
-              padding: 10px 8px;
+              gap: 5px;
+              padding: 10px 16px;
               text-decoration: none;
-              color: rgba(255, 255, 255, 0.45);
-              transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+              color: rgba(255, 255, 255, 0.5);
+              transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
               -webkit-tap-highlight-color: transparent;
               touch-action: manipulation;
-              border-radius: 14px;
+              border-radius: 20px;
               position: relative;
               background: transparent;
+              min-width: 60px;
+              text-align: center;
             }
 
+            /* Tap animation - bounce effect */
             .mobile-nav-item:active {
-              transform: scale(0.92);
-              background: rgba(102, 126, 234, 0.08);
+              transform: scale(0.85);
             }
 
+            /* Pill button active state */
             .mobile-nav-item.active {
               color: #ffffff;
-              background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.12) 100%);
-              box-shadow: inset 0 0 20px rgba(102, 126, 234, 0.15);
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.4),
+                0 0 20px rgba(102, 126, 234, 0.2);
+              padding: 8px 18px;
+              animation: pillPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
 
+            @keyframes pillPop {
+              0% { transform: scale(0.8); opacity: 0.5; }
+              50% { transform: scale(1.1); }
+              100% { transform: scale(1); opacity: 1; }
+            }
+
+            /* Glow pulse animation for active item */
             .mobile-nav-item.active::before {
               content: '';
               position: absolute;
-              top: 0;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 36px;
-              height: 3.5px;
-              background: linear-gradient(90deg, #667eea 0%, #00d4ff 100%);
-              border-radius: 0 0 4px 4px;
-              box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+              inset: -2px;
+              border-radius: 22px;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              z-index: -1;
+              opacity: 0;
+              animation: glowPulse 2s ease-in-out infinite;
+            }
+
+            @keyframes glowPulse {
+              0%, 100% { opacity: 0; transform: scale(1); }
+              50% { opacity: 0.3; transform: scale(1.05); }
             }
 
             .mobile-nav-item.active .nav-icon {
-              color: #667eea;
-              transform: scale(1.15);
-              filter: drop-shadow(0 2px 6px rgba(102, 126, 234, 0.4));
+              color: #ffffff;
+              transform: scale(1.1);
+              animation: iconBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
 
+            @keyframes iconBounce {
+              0% { transform: scale(0.5) rotate(-10deg); }
+              50% { transform: scale(1.2) rotate(5deg); }
+              100% { transform: scale(1.1) rotate(0deg); }
+            }
+
+            /* Hover state for non-active items */
             .mobile-nav-item:hover:not(.active) {
-              color: rgba(255, 255, 255, 0.7);
-              background: rgba(102, 126, 234, 0.05);
+              color: rgba(255, 255, 255, 0.8);
+              background: rgba(255, 255, 255, 0.08);
+              transform: translateY(-2px);
             }
 
             .nav-icon {
@@ -155,45 +177,36 @@ export default function DashboardLayout({
               justify-content: center;
               height: 24px;
               width: 24px;
-              transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+              transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
               flex-shrink: 0;
+              margin: 0 auto;
             }
 
             .nav-label {
-              font-size: 0.7rem;
+              font-size: 0.65rem;
               font-weight: 600;
               text-align: center;
-              line-height: 1;
+              line-height: 1.2;
               color: inherit;
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
+              letter-spacing: 0.2px;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              transition: all 0.3s ease;
               width: 100%;
-              letter-spacing: 0.3px;
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-              display: flex;
-              align-items: center;
-              justify-content: center;
+              display: block;
+            }
+
+            /* Active label styling */
+            .mobile-nav-item.active .nav-label {
+              font-weight: 700;
+              letter-spacing: 0.4px;
             }
 
             @media (min-width: 768px) {
               .mobile-bottom-nav {
                 display: none;
-              }
-            }
-            
-            /* Scroll hint indicators */
-            @media (max-width: 767px) {
-              .mobile-bottom-nav::after {
-                content: '';
-                position: absolute;
-                right: 0;
-                top: 0;
-                bottom: env(safe-area-inset-bottom);
-                width: 30px;
-                background: linear-gradient(90deg, transparent 0%, rgba(15, 15, 25, 0.95) 100%);
-                pointer-events: none;
-                z-index: 1;
               }
             }
           `}</style>
