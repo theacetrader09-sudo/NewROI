@@ -27,150 +27,158 @@ export default async function AdminDepositsPage() {
     });
 
     return (
-        <div style={{ padding: '40px' }}>
+        <div className="responsive-padding" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             {/* Pending Deposits Section */}
-            <header style={{ marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Deposit Verification</h1>
-                <p style={{ color: 'var(--text-secondary)' }}>Review TXIDs and manually activate packages.</p>
+            <header style={{ marginBottom: '24px' }}>
+                <h1 style={{ fontSize: '1.6rem', fontWeight: '800' }}>Deposit Verification</h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Review TXIDs and manually activate packages.</p>
             </header>
 
-            <div className="glass" style={{ width: '100%', overflow: 'hidden', marginBottom: '60px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                    <thead>
-                        <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)' }}>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>MEMBER</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>AMOUNT</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>TXID (HASH)</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>DATE</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>ACTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {pendingDeposits.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                    No pending deposits to verify.
-                                </td>
-                            </tr>
-                        ) : (
-                            pendingDeposits.map((dep) => (
-                                <tr key={dep.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        <div style={{ fontWeight: '600' }}>{dep.user.name}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{dep.user.email}</div>
-                                    </td>
-                                    <td style={{ padding: '16px 24px', fontWeight: '700', color: 'var(--accent-green)' }}>
+            {/* Mobile-friendly card layout for pending deposits */}
+            <div style={{ marginBottom: '60px' }}>
+                {pendingDeposits.length === 0 ? (
+                    <div className="glass" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        No pending deposits to verify.
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {pendingDeposits.map((dep) => (
+                            <div key={dep.id} className="glass" style={{ 
+                                padding: '20px',
+                                borderRadius: '16px',
+                                border: '1px solid rgba(251, 191, 36, 0.3)',
+                                background: 'rgba(251, 191, 36, 0.05)'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                                    <div>
+                                        <div style={{ fontWeight: '700', fontSize: '1rem' }}>{dep.user.name}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{dep.user.email}</div>
+                                    </div>
+                                    <div style={{ 
+                                        fontSize: '1.2rem', 
+                                        fontWeight: '800', 
+                                        color: 'var(--accent-green)',
+                                        background: 'rgba(16, 185, 129, 0.1)',
+                                        padding: '6px 14px',
+                                        borderRadius: '10px'
+                                    }}>
                                         ${Number(dep.amount).toFixed(2)}
-                                    </td>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        <code style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', background: 'rgba(59, 130, 246, 0.05)', padding: '4px 8px', borderRadius: '4px' }}>
-                                            {dep.txid}
-                                        </code>
-                                    </td>
-                                    <td style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                        {new Date(dep.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        <ApproveButton id={dep.id} />
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                    </div>
+                                </div>
+                                
+                                <div style={{ marginBottom: '16px' }}>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>TXID</div>
+                                    <code style={{ 
+                                        fontSize: '0.75rem', 
+                                        color: 'var(--accent-blue)', 
+                                        background: 'rgba(59, 130, 246, 0.1)', 
+                                        padding: '8px 12px', 
+                                        borderRadius: '8px',
+                                        display: 'block',
+                                        wordBreak: 'break-all'
+                                    }}>
+                                        {dep.txid}
+                                    </code>
+                                </div>
+                                
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                        {new Date(dep.createdAt).toLocaleDateString()} {new Date(dep.createdAt).toLocaleTimeString()}
+                                    </div>
+                                    <ApproveButton id={dep.id} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Approved Deposits Ledger */}
             <header style={{ marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '1.4rem', fontWeight: '700' }}>Approved Deposits Ledger</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                     View auto-approved vs manually-approved deposits
                 </p>
             </header>
 
-            <div className="glass" style={{ width: '100%', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                    <thead>
-                        <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)' }}>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>MEMBER</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>AMOUNT</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>TXID</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>DATE</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>APPROVAL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {approvedDeposits.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                    No approved deposits yet.
-                                </td>
-                            </tr>
-                        ) : (
-                            approvedDeposits.map((dep) => (
-                                <tr key={dep.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        <div style={{ fontWeight: '600' }}>{dep.user.name}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{dep.user.email}</div>
-                                    </td>
-                                    <td style={{ padding: '16px 24px', fontWeight: '700', color: 'var(--accent-green)' }}>
-                                        ${Number(dep.amount).toFixed(2)}
-                                    </td>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                                            {dep.txid?.substring(0, 16)}...
-                                        </code>
-                                    </td>
-                                    <td style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                        {new Date(dep.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        {dep.approvalMethod === 'AUTO' ? (
-                                            <span style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                padding: '6px 12px',
-                                                borderRadius: '20px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                background: 'rgba(16, 185, 129, 0.1)',
-                                                color: '#10b981'
-                                            }}>
-                                                🤖 AUTO
-                                            </span>
-                                        ) : dep.approvalMethod === 'MANUAL' ? (
-                                            <span style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                padding: '6px 12px',
-                                                borderRadius: '20px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                background: 'rgba(102, 126, 234, 0.1)',
-                                                color: '#667eea'
-                                            }}>
-                                                👤 MANUAL
-                                            </span>
-                                        ) : (
-                                            <span style={{
-                                                padding: '6px 12px',
-                                                borderRadius: '20px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                background: 'rgba(107, 114, 128, 0.1)',
-                                                color: '#6b7280'
-                                            }}>
-                                                N/A
-                                            </span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {approvedDeposits.length === 0 ? (
+                    <div className="glass" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        No approved deposits yet.
+                    </div>
+                ) : (
+                    approvedDeposits.map((dep) => (
+                        <div key={dep.id} className="glass" style={{ 
+                            padding: '16px 20px',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: '12px'
+                        }}>
+                            <div style={{ flex: '1', minWidth: '150px' }}>
+                                <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{dep.user.name}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{dep.user.email}</div>
+                            </div>
+                            
+                            <div style={{ fontWeight: '700', color: 'var(--accent-green)', minWidth: '80px' }}>
+                                ${Number(dep.amount).toFixed(2)}
+                            </div>
+                            
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: '100px' }}>
+                                {new Date(dep.createdAt).toLocaleDateString()}
+                            </div>
+                            
+                            {dep.approvalMethod === 'AUTO' ? (
+                                <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '6px 12px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    background: 'rgba(16, 185, 129, 0.15)',
+                                    color: '#10b981',
+                                    minWidth: '80px',
+                                    justifyContent: 'center'
+                                }}>
+                                    🤖 AUTO
+                                </span>
+                            ) : dep.approvalMethod === 'MANUAL' ? (
+                                <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '6px 12px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    background: 'rgba(102, 126, 234, 0.15)',
+                                    color: '#667eea',
+                                    minWidth: '80px',
+                                    justifyContent: 'center'
+                                }}>
+                                    👤 MANUAL
+                                </span>
+                            ) : (
+                                <span style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    background: 'rgba(107, 114, 128, 0.15)',
+                                    color: '#6b7280',
+                                    minWidth: '80px',
+                                    textAlign: 'center'
+                                }}>
+                                    LEGACY
+                                </span>
+                            )}
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );
