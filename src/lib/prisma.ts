@@ -1,22 +1,16 @@
+```
 import { PrismaClient } from "@prisma/client";
 
 const prismaClientSingleton = () => {
-    let url = process.env.SUPABASE_POOLER_URL || process.env.DATABASE_URL;
-
-    // HARDCODE FALLBACK FOR PRODUCTION TO FIX CONNECTION ISSUE
-    if (process.env.NODE_ENV === 'production' && !url?.includes("pooler.supabase.com")) {
-        console.log("[PRISMA] Applying hardcoded Production Pooler URL override");
-        url = "postgresql://postgres.fyatcvetnrpgclpbydmr:vishurathore%4072@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true";
-    }
-
-    if (url) {
-        // Redact password for logging
-        const redacted = url.replace(/:([^:@]+)@/, ":****@");
-        console.log(`[PRISMA] Initializing client with URL: ${redacted}`);
-    } else {
-        console.error("[PRISMA] No database URL defined!");
-    }
-
+    // UNCONDITIONAL HARDCODE to guarantee correct connection
+    // This is to debug why Vercel persists in using the wrong URL
+    console.log("!!! FORCING SUPABASE POOLER URL !!!");
+    const url = "postgresql://postgres.fyatcvetnrpgclpbydmr:vishurathore%4072@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true";
+    
+    // Log the URL we are using (redacted)
+    const redacted = url.replace(/:([^:@]+)@/, ":****@");
+    console.log(`[PRISMA] Initializing client with FORCED URL: ${ redacted } `);
+    
     return new PrismaClient({
         datasources: {
             db: {
