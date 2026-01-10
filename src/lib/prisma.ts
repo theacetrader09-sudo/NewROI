@@ -1,4 +1,3 @@
-```
 import { PrismaClient } from "@prisma/client";
 
 const prismaClientSingleton = () => {
@@ -6,11 +5,11 @@ const prismaClientSingleton = () => {
     // This is to debug why Vercel persists in using the wrong URL
     console.log("!!! FORCING SUPABASE POOLER URL !!!");
     const url = "postgresql://postgres.fyatcvetnrpgclpbydmr:vishurathore%4072@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true";
-    
+
     // Log the URL we are using (redacted)
     const redacted = url.replace(/:([^:@]+)@/, ":****@");
-    console.log(`[PRISMA] Initializing client with FORCED URL: ${ redacted } `);
-    
+    console.log(`[PRISMA] Initializing client with FORCED URL: ${redacted} `);
+
     return new PrismaClient({
         datasources: {
             db: {
