@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
     TrendingUp,
@@ -9,7 +9,7 @@ import {
     Package,
     ArrowUpRight,
     ArrowDownLeft,
-    LogOut,
+    Bell,
     Copy,
     Clock,
     Home,
@@ -20,7 +20,7 @@ import Link from "next/link";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 
 export default function ModernDashboard() {
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const router = useRouter();
 
     const [user, setUser] = useState<any>(null);
@@ -29,18 +29,12 @@ export default function ModernDashboard() {
     const [roiTimeLeft, setRoiTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
     useEffect(() => {
-        // Wait for session to finish loading before checking
-        if (status === "loading") return;
-
-        if (status === "unauthenticated") {
+        if (!session) {
             router.push("/login");
             return;
         }
-
-        if (status === "authenticated") {
-            fetchDashboardData();
-        }
-    }, [status, session]);
+        fetchDashboardData();
+    }, [session]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -146,13 +140,8 @@ export default function ModernDashboard() {
                             </div>
                         </div>
                     </div>
-                    <button
-                        onClick={() => signOut({ callbackUrl: '/login' })}
-                        className="w-10 h-10 md:w-11 md:h-11 rounded-xl border border-glass-border bg-secondary flex items-center justify-center hover:bg-red-500/20 transition-colors"
-                        style={{ color: 'var(--accent-red)' }}
-                        title="Logout"
-                    >
-                        <LogOut size={20} />
+                    <button className="w-10 h-10 md:w-11 md:h-11 rounded-xl border border-glass-border bg-secondary flex items-center justify-center hover:bg-primary-light transition-colors" style={{ color: 'var(--text-primary)' }}>
+                        <Bell size={20} />
                     </button>
                 </div>
 
@@ -341,7 +330,7 @@ export default function ModernDashboard() {
                         </button>
                     </div>
                     <div className="neon-border-animated bg-secondary rounded-xl p-4 relative">
-                        <p className="text-sm font-mono break-all relative z-10" style={{ color: '#00d4ff', textShadow: '0 0 8px rgba(0, 212, 255, 0.3)' }}>
+                        <p className="text-sm font-mono break-all relative z-10" style={{ color: '#ffffff' }}>
                             {window.location.origin}/register?ref={user.referralCode}
                         </p>
                     </div>

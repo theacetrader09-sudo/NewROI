@@ -45,9 +45,33 @@ export async function GET() {
             0
         );
 
+        // Calculate total earnings (ROI + Commissions)
+        const earnings = await prisma.transaction.findMany({
+            where: {
+                userId: user.id,
+                type: { in: ['ROI', 'COMMISSION'] },
+                status: 'COMPLETED'
+            },
+            select: {
+                amount: true
+            }
+        });
+
+        const totalEarnings = earnings.reduce(
+            (sum, tx) => sum + Number(tx.amount),
+            0
+        );
+
+        // Count direct referrals
+        const referralCount = await prisma.user.count({
+            where: { uplineId: user.id }
+        });
+
         return NextResponse.json({
             ...user,
-            totalInvested
+            totalInvested,
+            totalEarnings,
+            referralCount
         });
 
     } catch (error) {
