@@ -20,7 +20,7 @@ import Link from "next/link";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 
 export default function ModernDashboard() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
 
     const [user, setUser] = useState<any>(null);
@@ -29,12 +29,18 @@ export default function ModernDashboard() {
     const [roiTimeLeft, setRoiTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
     useEffect(() => {
-        if (!session) {
+        // Wait for session to finish loading before checking
+        if (status === "loading") return;
+
+        if (status === "unauthenticated") {
             router.push("/login");
             return;
         }
-        fetchDashboardData();
-    }, [session]);
+
+        if (status === "authenticated") {
+            fetchDashboardData();
+        }
+    }, [status, session]);
 
     useEffect(() => {
         const timer = setInterval(() => {

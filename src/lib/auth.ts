@@ -3,9 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-// Session duration: 7 days default, 30 days if "remember me"
-const DEFAULT_SESSION_DAYS = 7;
-const REMEMBER_ME_DAYS = 30;
+// Session duration: 30 days (extended for better UX)
+const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -46,7 +45,6 @@ export const authOptions: NextAuthOptions = {
                     email: user.email,
                     name: user.name,
                     role: user.role,
-                    rememberMe: credentials.rememberMe === "true"
                 };
             }
         })
@@ -56,7 +54,6 @@ export const authOptions: NextAuthOptions = {
             if (user) {
                 token.id = user.id;
                 token.role = (user as any).role;
-                token.rememberMe = (user as any).rememberMe;
             }
             return token;
         },
@@ -73,10 +70,24 @@ export const authOptions: NextAuthOptions = {
     },
     session: {
         strategy: "jwt",
-        maxAge: DEFAULT_SESSION_DAYS * 24 * 60 * 60, // 7 days in seconds
+        maxAge: SESSION_MAX_AGE,
     },
     jwt: {
-        maxAge: REMEMBER_ME_DAYS * 24 * 60 * 60, // 30 days max for JWT
+        maxAge: SESSION_MAX_AGE,
+    },
+    cookies: {
+        sessionToken: {
+            name: process.env.NODE_ENV === "production"
+                ? "__Secure-next-auth.session-token"
+                : "next-auth.session-token",
+            options: {
+                httpOnly: true,
+                sameSite: "lax",
+                path: "/",
+                secure: process.env.NODE_ENV === "production",
+                maxAge: SESSION_MAX_AGE,
+            },
+        },
     },
     secret: process.env.NEXTAUTH_SECRET,
 };
