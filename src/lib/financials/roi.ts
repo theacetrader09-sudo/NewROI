@@ -11,7 +11,11 @@ const FALLBACK_LEVEL_COMMISSIONS = [0.06, 0.05, 0.02, 0.02, 0.01, 0.01, 0.005, 0
  * @param forceRerun - If true, bypasses idempotency check (for manual admin triggers)
  */
 export async function distributeDailyROI(isManual: boolean = false, forceRerun: boolean = false) {
-    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    // Use IST timezone (UTC+5:30) for date calculation
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
+    const istDate = new Date(now.getTime() + istOffset);
+    const today = istDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD in IST
 
     console.log(`[ROI] Starting ${isManual ? 'MANUAL' : 'AUTO'} distribution for ${today}...`);
 
