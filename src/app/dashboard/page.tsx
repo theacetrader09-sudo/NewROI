@@ -46,7 +46,12 @@ export default function ModernDashboard() {
         const timer = setInterval(() => {
             const now = new Date();
             const nextROI = new Date();
-            nextROI.setHours(24, 0, 0, 0);
+            // Set to 1:30 AM IST
+            nextROI.setHours(1, 30, 0, 0);
+            // If we're past 1:30 AM today, set to tomorrow 1:30 AM
+            if (now >= nextROI) {
+                nextROI.setDate(nextROI.getDate() + 1);
+            }
             const diff = nextROI.getTime() - now.getTime();
 
             if (diff <= 0) {
