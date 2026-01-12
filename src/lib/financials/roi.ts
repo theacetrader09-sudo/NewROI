@@ -41,17 +41,21 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
     let processedCount = 0;
     let skippedCount = 0;
 
+    const triggerType = isManual ? "MANUAL" : "AUTO";
+
     for (const investment of activeInvestments) {
         try {
-            // 2. Check if ROI already credited for this user + investment + date (Idempotency)
-            // Skip this check if forceRerun is enabled (manual admin override)
+            // 2. Check if ROI already credited for this user + investment + date + triggerType (Idempotency)
+            // Manual and Auto triggers are tracked separately
+            // Skip this check if forceRerun is enabled (force override)
             if (!forceRerun) {
                 const existingLog = await prisma.roiLog.findUnique({
                     where: {
-                        userId_investmentId_date: {
+                        userId_investmentId_date_triggerType: {
                             userId: investment.userId,
                             investmentId: investment.id,
-                            date: today
+                            date: today,
+                            triggerType: triggerType
                         }
                     }
                 });
@@ -91,15 +95,16 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                     }
                 });
 
-                // 4c. Log in the ROI Idempotency Table
-                // Use upsert when force re-run to allow re-crediting for same date
+                // 4c. Log in the ROI Idempotency Table with triggerType
+                // Use upsert when force re-run to allow re-crediting for same date+type
                 if (forceRerun) {
                     await tx.roiLog.upsert({
                         where: {
-                            userId_investmentId_date: {
+                            userId_investmentId_date_triggerType: {
                                 userId: investment.userId,
                                 investmentId: investment.id,
-                                date: today
+                                date: today,
+                                triggerType: triggerType
                             }
                         },
                         update: {
@@ -109,7 +114,8 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                             userId: investment.userId,
                             investmentId: investment.id,
                             amount: roiAmount,
-                            date: today
+                            date: today,
+                            triggerType: triggerType
                         }
                     });
                 } else {
@@ -118,7 +124,8 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                             userId: investment.userId,
                             investmentId: investment.id,
                             amount: roiAmount,
-                            date: today
+                            date: today,
+                            triggerType: triggerType
                         }
                     });
                 }

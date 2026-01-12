@@ -86,13 +86,14 @@ model RoiLog {
   investmentId String
   amount       Decimal  @db.Decimal(18, 2)  // Changed from Float
   date         String   // YYYY-MM-DD format
+  triggerType  String   @default("AUTO") // AUTO or MANUAL
   
   createdAt DateTime @default(now())
 
   user       User       @relation(fields: [userId], references: [id])
   investment Investment @relation(fields: [investmentId], references: [id])
 
-  @@unique([userId, investmentId, date])
+  @@unique([userId, investmentId, date, triggerType])
   @@index([userId])
   @@index([date])
 }
