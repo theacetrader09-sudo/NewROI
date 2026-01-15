@@ -11,23 +11,37 @@ import {
     Wallet,
     Clock,
     FileText,
-    Hash
+    Hash,
+    Calendar,
+    X
 } from "lucide-react";
 
 export default function TransactionsPage() {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("ALL");
+    const [dateFilter, setDateFilter] = useState("all");
     const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [showCustomModal, setShowCustomModal] = useState(false);
+    const [customStartDate, setCustomStartDate] = useState("");
+    const [customEndDate, setCustomEndDate] = useState("");
 
     useEffect(() => {
-        fetchTransactions(filter);
-    }, [filter]);
+        fetchTransactions();
+    }, [filter, dateFilter]);
 
-    const fetchTransactions = async (type: string) => {
+    const fetchTransactions = async () => {
         setLoading(true);
         try {
-            const url = type === "ALL" ? "/api/user/transactions" : `/api/user/transactions?type=${type}`;
+            let url = "/api/user/transactions?";
+            const params = new URLSearchParams();
+
+            if (filter !== "ALL") params.append("type", filter);
+            if (dateFilter !== "all" && dateFilter !== "custom") params.append("dateFilter", dateFilter);
+            if (dateFilter === "custom" && customStartDate) params.append("startDate", customStartDate);
+            if (dateFilter === "custom" && customEndDate) params.append("endDate", customEndDate);
+
+            url += params.toString();
             const res = await fetch(url);
             const data = await res.json();
             if (res.ok) setTransactions(data.transactions || []);
@@ -35,6 +49,13 @@ export default function TransactionsPage() {
             console.error("Failed to fetch transactions:", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const applyCustomRange = () => {
+        if (customStartDate && customEndDate) {
+            setDateFilter("custom");
+            setShowCustomModal(false);
         }
     };
 
@@ -76,10 +97,26 @@ export default function TransactionsPage() {
         return !["WITHDRAWAL", "WITHDRAW", "PACKAGE_ACTIVATION"].includes(type?.toUpperCase());
     };
 
-    const filters = ["ALL", "DEPOSIT", "ROI", "COMMISSION", "WITHDRAWAL"];
+    const typeFilters = ["ALL", "DEPOSIT", "ROI", "COMMISSION", "WITHDRAWAL"];
+    const dateFilters = [
+        { key: "all", label: "All Time" },
+        { key: "today", label: "Today" },
+        { key: "yesterday", label: "Yesterday" },
+        { key: "7days", label: "7 Days" },
+        { key: "month", label: "This Month" },
+    ];
 
     const toggleExpand = (id: string) => {
         setExpandedId(expandedId === id ? null : id);
+    };
+
+    const getDateLabel = () => {
+        if (dateFilter === "custom" && customStartDate && customEndDate) {
+            const start = new Date(customStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+            const end = new Date(customEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+            return `${start} - ${end}`;
+        }
+        return null;
     };
 
     return (
@@ -90,39 +127,206 @@ export default function TransactionsPage() {
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Recent Activity & Payments</p>
             </header>
 
-            {/* Filter Pills */}
-            <div style={{
-                display: 'flex',
-                gap: '8px',
-                marginBottom: '20px',
-                overflowX: 'auto',
-                paddingBottom: '8px',
-                scrollbarWidth: 'none'
-            }}>
-                {filters.map(f => (
+            {/* Date Filter Row */}
+            <div style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <Calendar size={14} style={{ color: 'var(--text-muted)' }} />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date Range</span>
+                </div>
+                <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    overflowX: 'auto',
+                    paddingBottom: '8px',
+                    scrollbarWidth: 'none'
+                }}>
+                    {dateFilters.map(df => (
+                        <button
+                            key={df.key}
+                            onClick={() => setDateFilter(df.key)}
+                            style={{
+                                padding: '8px 14px',
+                                borderRadius: '12px',
+                                background: dateFilter === df.key
+                                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                    : 'rgba(255, 255, 255, 0.05)',
+                                color: dateFilter === df.key ? 'white' : 'rgba(255, 255, 255, 0.6)',
+                                border: dateFilter === df.key ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                transition: 'all 0.3s ease',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
+                            }}
+                        >
+                            {df.label}
+                        </button>
+                    ))}
                     <button
-                        key={f}
-                        onClick={() => setFilter(f)}
+                        onClick={() => setShowCustomModal(true)}
                         style={{
-                            padding: '10px 18px',
-                            borderRadius: '20px',
-                            background: filter === f
-                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                            padding: '8px 14px',
+                            borderRadius: '12px',
+                            background: dateFilter === 'custom'
+                                ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
                                 : 'rgba(255, 255, 255, 0.05)',
-                            color: filter === f ? 'white' : 'rgba(255, 255, 255, 0.6)',
-                            border: filter === f ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+                            color: dateFilter === 'custom' ? 'white' : 'rgba(255, 255, 255, 0.6)',
+                            border: dateFilter === 'custom' ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
                             cursor: 'pointer',
-                            fontSize: '0.8rem',
+                            fontSize: '0.75rem',
                             fontWeight: '600',
                             transition: 'all 0.3s ease',
                             whiteSpace: 'nowrap',
-                            flexShrink: 0
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
                         }}
                     >
-                        {f}
+                        <Calendar size={12} />
+                        {getDateLabel() || "Custom"}
                     </button>
-                ))}
+                </div>
             </div>
+
+            {/* Type Filter Pills */}
+            <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <FileText size={14} style={{ color: 'var(--text-muted)' }} />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type</span>
+                </div>
+                <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    overflowX: 'auto',
+                    paddingBottom: '8px',
+                    scrollbarWidth: 'none'
+                }}>
+                    {typeFilters.map(f => (
+                        <button
+                            key={f}
+                            onClick={() => setFilter(f)}
+                            style={{
+                                padding: '8px 14px',
+                                borderRadius: '12px',
+                                background: filter === f
+                                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                    : 'rgba(255, 255, 255, 0.05)',
+                                color: filter === f ? 'white' : 'rgba(255, 255, 255, 0.6)',
+                                border: filter === f ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                transition: 'all 0.3s ease',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
+                            }}
+                        >
+                            {f}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Custom Date Modal */}
+            {showCustomModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '20px'
+                }}>
+                    <div style={{
+                        background: 'linear-gradient(180deg, #1a1a2e 0%, #16162a 100%)',
+                        borderRadius: '20px',
+                        padding: '24px',
+                        width: '100%',
+                        maxWidth: '340px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h3 style={{ fontWeight: '700', fontSize: '1.1rem' }}>Select Date Range</h3>
+                            <button
+                                onClick={() => setShowCustomModal(false)}
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    padding: '8px',
+                                    cursor: 'pointer',
+                                    color: 'white'
+                                }}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>From</label>
+                            <input
+                                type="date"
+                                value={customStartDate}
+                                onChange={(e) => setCustomStartDate(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 14px',
+                                    borderRadius: '12px',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    color: 'white',
+                                    fontSize: '0.9rem'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>To</label>
+                            <input
+                                type="date"
+                                value={customEndDate}
+                                onChange={(e) => setCustomEndDate(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 14px',
+                                    borderRadius: '12px',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    color: 'white',
+                                    fontSize: '0.9rem'
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            onClick={applyCustomRange}
+                            disabled={!customStartDate || !customEndDate}
+                            style={{
+                                width: '100%',
+                                padding: '14px',
+                                borderRadius: '12px',
+                                background: customStartDate && customEndDate
+                                    ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
+                                    : 'rgba(255, 255, 255, 0.1)',
+                                color: 'white',
+                                border: 'none',
+                                cursor: customStartDate && customEndDate ? 'pointer' : 'not-allowed',
+                                fontWeight: '600',
+                                fontSize: '0.95rem'
+                            }}
+                        >
+                            Apply Range
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Transaction Cards */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
