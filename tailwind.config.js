@@ -10,9 +10,9 @@ module.exports = {
             colors: {
                 // Your existing dark theme colors
                 primary: {
-                    DEFAULT: '#121212',
-                    dark: '#0a0a0a',
-                    light: '#1e1e1e',
+                    DEFAULT: '#8E2DE2',
+                    dark: '#4A00E0',
+                    light: '#a855f7',
                 },
                 secondary: {
                     DEFAULT: '#1a1a2e',
@@ -29,17 +29,33 @@ module.exports = {
                     border: 'rgba(255, 255, 255, 0.1)',
                     bg: 'rgba(255, 255, 255, 0.05)',
                 },
+                background: {
+                    dark: '#191022',
+                    light: '#f7f6f8',
+                },
             },
             backgroundImage: {
                 'gradient-primary': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'gradient-purple': 'linear-gradient(135deg, #4A00E0 0%, #8E2DE2 100%)',
                 'gradient-dark': 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
                 'gradient-pink': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'gradient-animated': 'linear-gradient(-45deg, #4A00E0, #8E2DE2, #191022, #4A00E0)',
             },
             fontFamily: {
                 sans: ['Inter', 'system-ui', 'sans-serif'],
+                display: ['Manrope', 'sans-serif'],
+            },
+            animation: {
+                'gradient': 'gradient 15s ease infinite',
+            },
+            keyframes: {
+                gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                },
             },
         },
     },
     plugins: [],
-    darkMode: 'class', // Enable dark mode with class strategy
+    darkMode: 'class',
 }

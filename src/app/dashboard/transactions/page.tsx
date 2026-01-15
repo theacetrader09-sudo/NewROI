@@ -1,47 +1,45 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-    ChevronDown,
-    TrendingUp,
-    ArrowDownCircle,
-    ArrowUpCircle,
-    Package,
-    Users,
-    Wallet,
-    Clock,
-    FileText,
-    Hash,
-    Calendar,
-    X
-} from "lucide-react";
+import { useRouter } from "next/navigation";
+
+interface Transaction {
+    id: string;
+    type: string;
+    amount: number;
+    status: string;
+    description: string;
+    createdAt: string;
+}
+
+type DateRange = 'ALL' | 'TODAY' | 'YESTERDAY' | 'WEEK' | 'CUSTOM';
 
 export default function TransactionsPage() {
-    const [transactions, setTransactions] = useState([]);
+    const router = useRouter();
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("ALL");
-    const [dateFilter, setDateFilter] = useState("all");
-    const [expandedId, setExpandedId] = useState<string | null>(null);
-    const [showCustomModal, setShowCustomModal] = useState(false);
-    const [customStartDate, setCustomStartDate] = useState("");
-    const [customEndDate, setCustomEndDate] = useState("");
+    const [dateRange, setDateRange] = useState<DateRange>('ALL');
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
 
     useEffect(() => {
         fetchTransactions();
-    }, [filter, dateFilter]);
+    }, [filter]);
+
+    useEffect(() => {
+        filterByDate();
+    }, [transactions, dateRange, customStartDate, customEndDate]);
 
     const fetchTransactions = async () => {
         setLoading(true);
         try {
-            let url = "/api/user/transactions?";
-            const params = new URLSearchParams();
-
-            if (filter !== "ALL") params.append("type", filter);
-            if (dateFilter !== "all" && dateFilter !== "custom") params.append("dateFilter", dateFilter);
-            if (dateFilter === "custom" && customStartDate) params.append("startDate", customStartDate);
-            if (dateFilter === "custom" && customEndDate) params.append("endDate", customEndDate);
-
-            url += params.toString();
+            let url = "/api/user/transactions";
+            if (filter !== "ALL") {
+                url += `?type=${filter}`;
+            }
             const res = await fetch(url);
             const data = await res.json();
             if (res.ok) setTransactions(data.transactions || []);
@@ -52,510 +50,353 @@ export default function TransactionsPage() {
         }
     };
 
-    const applyCustomRange = () => {
-        if (customStartDate && customEndDate) {
-            setDateFilter("custom");
-            setShowCustomModal(false);
+    const filterByDate = () => {
+        if (dateRange === 'ALL') {
+            setFilteredTransactions(transactions);
+            return;
         }
+
+        const now = new Date();
+        let startDate: Date;
+        let endDate = new Date(now);
+        endDate.setHours(23, 59, 59, 999);
+
+        switch (dateRange) {
+            case 'TODAY':
+                startDate = new Date(now);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'YESTERDAY':
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 1);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(now);
+                endDate.setDate(endDate.getDate() - 1);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case 'WEEK':
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 7);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'CUSTOM':
+                if (!customStartDate || !customEndDate) {
+                    setFilteredTransactions(transactions);
+                    return;
+                }
+                startDate = new Date(customStartDate);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(customEndDate);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            default:
+                setFilteredTransactions(transactions);
+                return;
+        }
+
+        const filtered = transactions.filter(tx => {
+            const txDate = new Date(tx.createdAt);
+            return txDate >= startDate && txDate <= endDate;
+        });
+        setFilteredTransactions(filtered);
     };
 
     const getTypeIcon = (type: string) => {
         switch (type?.toUpperCase()) {
-            case "DEPOSIT": return <Wallet size={20} />;
             case "ROI":
-            case "DAILY_ROI": return <TrendingUp size={20} />;
-            case "WITHDRAWAL":
-            case "WITHDRAW": return <ArrowDownCircle size={20} />;
-            case "PACKAGE_ACTIVATION": return <Package size={20} />;
+            case "DAILY_ROI":
+                return "trending_up";
             case "COMMISSION":
             case "LEVEL_1_COMMISSION":
             case "LEVEL_2_COMMISSION":
             case "LEVEL_3_COMMISSION":
-            case "LEVEL_4_COMMISSION":
-            case "LEVEL_5_COMMISSION":
-            case "REFERRAL_COMMISSION": return <Users size={20} />;
-            default: return <ArrowUpCircle size={20} />;
+            case "REFERRAL_COMMISSION":
+                return "group_add";
+            case "DEPOSIT":
+                return "account_balance_wallet";
+            case "WITHDRAWAL":
+            case "WITHDRAW":
+                return "arrow_upward";
+            default:
+                return "swap_horiz";
         }
     };
 
-    const getTypeGradient = (type: string) => {
+    const getIconColor = (type: string) => {
         switch (type?.toUpperCase()) {
-            case "DEPOSIT": return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
             case "ROI":
-            case "DAILY_ROI": return "linear-gradient(135deg, #10b981 0%, #059669 100%)";
-            case "WITHDRAWAL":
-            case "WITHDRAW": return "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+            case "DAILY_ROI":
+                return { color: '#4ade80', shadow: '0 0 10px rgba(74, 222, 128, 0.5), 0 0 20px rgba(74, 222, 128, 0.3)' };
             case "COMMISSION":
             case "LEVEL_1_COMMISSION":
             case "LEVEL_2_COMMISSION":
-            case "REFERRAL_COMMISSION": return "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)";
-            default: return "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)";
+            case "LEVEL_3_COMMISSION":
+            case "REFERRAL_COMMISSION":
+                return { color: '#facc15', shadow: '0 0 10px rgba(250, 204, 21, 0.5), 0 0 20px rgba(250, 204, 21, 0.3)' };
+            case "DEPOSIT":
+                return { color: '#8b5cf6', shadow: '0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3)' };
+            case "WITHDRAWAL":
+            case "WITHDRAW":
+                return { color: '#f87171', shadow: '0 0 10px rgba(248, 113, 113, 0.5), 0 0 20px rgba(248, 113, 113, 0.3)' };
+            default:
+                return { color: '#9ca3af', shadow: 'none' };
         }
     };
 
     const isIncome = (type: string) => {
-        return !["WITHDRAWAL", "WITHDRAW", "PACKAGE_ACTIVATION"].includes(type?.toUpperCase());
+        return !["WITHDRAWAL", "WITHDRAW", "INVESTMENT"].includes(type?.toUpperCase());
     };
 
-    const typeFilters = ["ALL", "DEPOSIT", "ROI", "COMMISSION", "WITHDRAWAL"];
-    const dateFilters = [
-        { key: "all", label: "All Time" },
-        { key: "today", label: "Today" },
-        { key: "yesterday", label: "Yesterday" },
-        { key: "7days", label: "7 Days" },
-        { key: "month", label: "This Month" },
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    const formatTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const typeFilters = ["ALL", "DEPOSIT", "ROI", "WITHDRAWAL"];
+    const dateRanges: { value: DateRange; label: string }[] = [
+        { value: 'ALL', label: 'All Time' },
+        { value: 'TODAY', label: 'Today' },
+        { value: 'YESTERDAY', label: 'Yesterday' },
+        { value: 'WEEK', label: '1 Week' },
+        { value: 'CUSTOM', label: 'Custom' }
     ];
 
-    const toggleExpand = (id: string) => {
-        setExpandedId(expandedId === id ? null : id);
-    };
-
-    const getDateLabel = () => {
-        if (dateFilter === "custom" && customStartDate && customEndDate) {
-            const start = new Date(customStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-            const end = new Date(customEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-            return `${start} - ${end}`;
-        }
-        return null;
-    };
-
     return (
-        <div className="responsive-padding" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div
+            className="w-full min-h-screen relative overflow-hidden flex flex-col"
+            style={{
+                background: 'radial-gradient(ellipse at top, #2e1065, #0B0A14 50%, #000000)'
+            }}
+        >
             {/* Header */}
-            <header style={{ marginBottom: '24px' }}>
-                <h1 style={{ fontSize: '1.6rem', fontWeight: '800', marginBottom: '4px' }}>Transactions</h1>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Recent Activity & Payments</p>
+            <header className="px-6 pt-12 pb-4 flex items-center justify-between z-10">
+                <button
+                    onClick={() => router.back()}
+                    className="p-2 rounded-full transition-colors"
+                    style={{ background: 'rgba(255, 255, 255, 0.05)' }}
+                >
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h1 className="text-xl font-bold tracking-tight text-white">Transaction History</h1>
+                <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-lg"
+                    style={{ background: 'linear-gradient(to bottom right, #6366f1, #9333ea)' }}
+                >
+                    N
+                </div>
             </header>
 
-            {/* Date Filter Row */}
-            <div style={{ marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <Calendar size={14} style={{ color: 'var(--text-muted)' }} />
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date Range</span>
-                </div>
-                <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                    overflowX: 'auto',
-                    paddingBottom: '8px',
-                    scrollbarWidth: 'none'
-                }}>
-                    {dateFilters.map(df => (
-                        <button
-                            key={df.key}
-                            onClick={() => setDateFilter(df.key)}
-                            style={{
-                                padding: '8px 14px',
-                                borderRadius: '12px',
-                                background: dateFilter === df.key
-                                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                                    : 'rgba(255, 255, 255, 0.05)',
-                                color: dateFilter === df.key ? 'white' : 'rgba(255, 255, 255, 0.6)',
-                                border: dateFilter === df.key ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                                cursor: 'pointer',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                                transition: 'all 0.3s ease',
-                                whiteSpace: 'nowrap',
-                                flexShrink: 0
-                            }}
-                        >
-                            {df.label}
-                        </button>
-                    ))}
+            {/* Type Filter Pills */}
+            <div className="px-6 py-2 overflow-x-auto flex space-x-3 z-10" style={{ scrollbarWidth: 'none' }}>
+                {typeFilters.map(f => (
                     <button
-                        onClick={() => setShowCustomModal(true)}
+                        key={f}
+                        onClick={() => setFilter(f)}
+                        className={`px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${filter === f
+                                ? 'text-white'
+                                : 'text-gray-300'
+                            }`}
                         style={{
-                            padding: '8px 14px',
-                            borderRadius: '12px',
-                            background: dateFilter === 'custom'
-                                ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
-                                : 'rgba(255, 255, 255, 0.05)',
-                            color: dateFilter === 'custom' ? 'white' : 'rgba(255, 255, 255, 0.6)',
-                            border: dateFilter === 'custom' ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                            cursor: 'pointer',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            transition: 'all 0.3s ease',
-                            whiteSpace: 'nowrap',
-                            flexShrink: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
+                            background: filter === f
+                                ? '#8b5cf6'
+                                : 'rgba(46, 30, 75, 0.4)',
+                            border: filter === f
+                                ? 'none'
+                                : '1px solid rgba(139, 92, 246, 0.15)',
+                            boxShadow: filter === f
+                                ? '0 4px 15px rgba(139, 92, 246, 0.4)'
+                                : 'none',
+                            backdropFilter: 'blur(12px)'
                         }}
                     >
-                        <Calendar size={12} />
-                        {getDateLabel() || "Custom"}
+                        {f === 'ALL' ? 'All' : f.charAt(0) + f.slice(1).toLowerCase()}
                     </button>
-                </div>
+                ))}
             </div>
 
-            {/* Type Filter Pills */}
-            <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <FileText size={14} style={{ color: 'var(--text-muted)' }} />
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type</span>
-                </div>
-                <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                    overflowX: 'auto',
-                    paddingBottom: '8px',
-                    scrollbarWidth: 'none'
-                }}>
-                    {typeFilters.map(f => (
+            {/* Date Range Filter */}
+            <div className="px-6 py-3 z-10">
+                <div className="flex items-center gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+                    <svg className="w-4 h-4 text-purple-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {dateRanges.map(d => (
                         <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            style={{
-                                padding: '8px 14px',
-                                borderRadius: '12px',
-                                background: filter === f
-                                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                                    : 'rgba(255, 255, 255, 0.05)',
-                                color: filter === f ? 'white' : 'rgba(255, 255, 255, 0.6)',
-                                border: filter === f ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                                cursor: 'pointer',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                                transition: 'all 0.3s ease',
-                                whiteSpace: 'nowrap',
-                                flexShrink: 0
+                            key={d.value}
+                            onClick={() => {
+                                setDateRange(d.value);
+                                if (d.value === 'CUSTOM') {
+                                    setShowDatePicker(true);
+                                } else {
+                                    setShowDatePicker(false);
+                                }
                             }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${dateRange === d.value
+                                    ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
+                                    : 'bg-white/5 text-gray-400 border border-white/10'
+                                }`}
                         >
-                            {f}
+                            {d.label}
                         </button>
                     ))}
                 </div>
+
+                {/* Custom Date Picker */}
+                {showDatePicker && dateRange === 'CUSTOM' && (
+                    <div
+                        className="mt-3 p-4 rounded-xl"
+                        style={{ background: 'rgba(46, 30, 75, 0.6)', border: '1px solid rgba(139, 92, 246, 0.2)' }}
+                    >
+                        <div className="flex gap-3">
+                            <div className="flex-1">
+                                <label className="text-xs text-gray-400 mb-1 block">Start Date</label>
+                                <input
+                                    type="date"
+                                    value={customStartDate}
+                                    onChange={(e) => setCustomStartDate(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg text-white text-sm"
+                                    style={{ background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="text-xs text-gray-400 mb-1 block">End Date</label>
+                                <input
+                                    type="date"
+                                    value={customEndDate}
+                                    onChange={(e) => setCustomEndDate(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg text-white text-sm"
+                                    style={{ background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Results Count */}
+                <p className="text-xs text-gray-500 mt-2">
+                    Showing {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
+                    {dateRange !== 'ALL' && ` (${dateRanges.find(d => d.value === dateRange)?.label})`}
+                </p>
             </div>
 
-            {/* Custom Date Modal */}
-            {showCustomModal && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000,
-                    padding: '20px'
-                }}>
-                    <div style={{
-                        background: 'linear-gradient(180deg, #1a1a2e 0%, #16162a 100%)',
-                        borderRadius: '20px',
-                        padding: '24px',
-                        width: '100%',
-                        maxWidth: '340px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h3 style={{ fontWeight: '700', fontSize: '1.1rem' }}>Select Date Range</h3>
-                            <button
-                                onClick={() => setShowCustomModal(false)}
-                                style={{
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    border: 'none',
-                                    borderRadius: '10px',
-                                    padding: '8px',
-                                    cursor: 'pointer',
-                                    color: 'white'
-                                }}
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>From</label>
-                            <input
-                                type="date"
-                                value={customStartDate}
-                                onChange={(e) => setCustomStartDate(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '12px 14px',
-                                    borderRadius: '12px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    color: 'white',
-                                    fontSize: '0.9rem'
-                                }}
-                            />
-                        </div>
-
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>To</label>
-                            <input
-                                type="date"
-                                value={customEndDate}
-                                onChange={(e) => setCustomEndDate(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '12px 14px',
-                                    borderRadius: '12px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    color: 'white',
-                                    fontSize: '0.9rem'
-                                }}
-                            />
-                        </div>
-
-                        <button
-                            onClick={applyCustomRange}
-                            disabled={!customStartDate || !customEndDate}
-                            style={{
-                                width: '100%',
-                                padding: '14px',
-                                borderRadius: '12px',
-                                background: customStartDate && customEndDate
-                                    ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
-                                    : 'rgba(255, 255, 255, 0.1)',
-                                color: 'white',
-                                border: 'none',
-                                cursor: customStartDate && customEndDate ? 'pointer' : 'not-allowed',
-                                fontWeight: '600',
-                                fontSize: '0.95rem'
-                            }}
-                        >
-                            Apply Range
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Transaction Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Transactions List */}
+            <main className="flex-1 overflow-y-auto px-5 pb-32 space-y-4 z-0" style={{ scrollbarWidth: 'none' }}>
                 {loading ? (
                     // Skeleton loaders
-                    [...Array(4)].map((_, i) => (
-                        <div key={i} style={{
-                            padding: '20px',
-                            background: 'rgba(255, 255, 255, 0.03)',
-                            borderRadius: '16px',
-                            border: '1px solid rgba(255, 255, 255, 0.06)',
-                            animation: 'pulse 1.5s infinite'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)' }} />
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ width: '120px', height: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '8px' }} />
-                                    <div style={{ width: '80px', height: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }} />
+                    [...Array(5)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="rounded-2xl p-4 animate-pulse"
+                            style={{
+                                background: 'rgba(46, 30, 75, 0.4)',
+                                border: '1px solid rgba(139, 92, 246, 0.15)'
+                            }}
+                        >
+                            <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center space-x-4">
+                                    <div className="w-12 h-12 rounded-xl bg-white/5" />
+                                    <div>
+                                        <div className="w-24 h-4 bg-white/10 rounded mb-2" />
+                                        <div className="w-16 h-3 bg-white/5 rounded" />
+                                    </div>
                                 </div>
-                                <div style={{ width: '70px', height: '28px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }} />
+                                <div className="w-16 h-6 bg-white/10 rounded" />
                             </div>
                         </div>
                     ))
-                ) : transactions.length === 0 ? (
-                    <div style={{
-                        padding: '60px 20px',
-                        textAlign: 'center',
-                        color: 'var(--text-muted)',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        borderRadius: '16px',
-                        border: '1px solid rgba(255, 255, 255, 0.05)'
-                    }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '12px', opacity: 0.3 }}>📊</div>
-                        <p style={{ fontWeight: '600' }}>No transactions found</p>
-                        <p style={{ fontSize: '0.85rem', marginTop: '4px', opacity: 0.6 }}>Your activity will appear here</p>
+                ) : filteredTransactions.length === 0 ? (
+                    <div className="text-center py-16">
+                        <div className="text-5xl mb-4 opacity-50">📊</div>
+                        <p className="text-white font-medium text-lg">No transactions found</p>
+                        <p className="text-gray-400 text-sm mt-1">
+                            {dateRange !== 'ALL' ? 'Try a different date range' : 'Your activity will appear here'}
+                        </p>
                     </div>
                 ) : (
-                    transactions.map((tx: any) => {
-                        const isExpanded = expandedId === tx.id;
+                    filteredTransactions.map((tx) => {
+                        const iconStyle = getIconColor(tx.type);
                         const income = isIncome(tx.type);
 
                         return (
                             <div
                                 key={tx.id}
-                                onClick={() => toggleExpand(tx.id)}
+                                className="rounded-2xl p-4 transition-transform active:scale-[0.98]"
                                 style={{
-                                    background: isExpanded
-                                        ? 'rgba(102, 126, 234, 0.08)'
-                                        : 'rgba(255, 255, 255, 0.03)',
-                                    borderRadius: '16px',
-                                    border: isExpanded
-                                        ? '1px solid rgba(102, 126, 234, 0.3)'
-                                        : '1px solid rgba(255, 255, 255, 0.06)',
-                                    overflow: 'hidden',
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    cursor: 'pointer'
+                                    background: 'rgba(46, 30, 75, 0.4)',
+                                    backdropFilter: 'blur(12px)',
+                                    border: '1px solid rgba(139, 92, 246, 0.15)',
+                                    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
                                 }}
                             >
-                                {/* Main Row */}
-                                <div style={{
-                                    padding: '16px 18px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '14px'
-                                }}>
-                                    {/* Icon */}
-                                    <div style={{
-                                        width: '48px',
-                                        height: '48px',
-                                        borderRadius: '14px',
-                                        background: getTypeGradient(tx.type),
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        flexShrink: 0,
-                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-                                    }}>
-                                        {getTypeIcon(tx.type)}
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center space-x-4">
+                                        {/* Icon with neon glow */}
+                                        <div
+                                            className="w-12 h-12 rounded-xl flex items-center justify-center"
+                                            style={{
+                                                background: 'rgba(255, 255, 255, 0.05)',
+                                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                boxShadow: iconStyle.shadow
+                                            }}
+                                        >
+                                            <span
+                                                className="material-icons-round text-2xl"
+                                                style={{ color: iconStyle.color }}
+                                            >
+                                                {getTypeIcon(tx.type)}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-white">
+                                                {tx.type?.replace(/_/g, ' ')}
+                                            </h3>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                {formatDate(tx.createdAt)} • {formatTime(tx.createdAt)}
+                                            </p>
+                                        </div>
                                     </div>
-
-                                    {/* Info */}
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{
-                                            fontWeight: '700',
-                                            fontSize: '0.95rem',
-                                            marginBottom: '3px',
-                                            color: 'var(--text-primary)'
-                                        }}>
-                                            {tx.type?.replace(/_/g, ' ')}
+                                    <div className="text-right">
+                                        <p className={`font-bold text-lg ${income ? 'text-green-400' : 'text-red-400'}`}>
+                                            {income ? '+' : '-'}${Math.abs(Number(tx.amount)).toFixed(2)}
                                         </p>
-                                        <p style={{
-                                            fontSize: '0.75rem',
-                                            color: 'var(--text-muted)',
-                                            fontFamily: 'monospace',
-                                            letterSpacing: '0.5px'
-                                        }}>
-                                            {(() => {
-                                                const type = tx.type?.toUpperCase();
-                                                let prefix = 'TXN';
-                                                if (type === 'DEPOSIT') prefix = 'DP';
-                                                else if (type === 'WITHDRAWAL' || type === 'WITHDRAW') prefix = 'WD';
-                                                else if (type === 'ROI' || type === 'DAILY_ROI') prefix = 'ROI';
-                                                else if (type?.includes('COMMISSION')) prefix = 'CM';
-                                                else if (type === 'PACKAGE_ACTIVATION') prefix = 'PKG';
-                                                return `${prefix}-${tx.id.slice(-5).toUpperCase().replace(/[^A-Z0-9]/g, '')}`;
-                                            })()}
-                                        </p>
-                                    </div>
-
-                                    {/* Amount Badge */}
-                                    <div style={{
-                                        padding: '8px 14px',
-                                        borderRadius: '10px',
-                                        background: income
-                                            ? 'rgba(16, 185, 129, 0.15)'
-                                            : 'rgba(239, 68, 68, 0.15)',
-                                        color: income ? '#10b981' : '#ef4444',
-                                        fontWeight: '700',
-                                        fontSize: '0.9rem',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '4px'
-                                    }}>
-                                        {income ? '+' : '-'}${Math.abs(Number(tx.amount)).toFixed(2)}
-                                    </div>
-
-                                    {/* Chevron */}
-                                    <ChevronDown
-                                        size={20}
-                                        style={{
-                                            color: 'var(--text-muted)',
-                                            transition: 'transform 0.3s ease',
-                                            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                                            flexShrink: 0
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Expanded Details */}
-                                <div style={{
-                                    maxHeight: isExpanded ? '200px' : '0px',
-                                    overflow: 'hidden',
-                                    transition: 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    background: 'rgba(0, 0, 0, 0.2)'
-                                }}>
-                                    <div style={{ padding: '0 18px 16px 18px' }}>
-                                        {/* Status */}
-                                        <div style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            padding: '12px 0',
-                                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
-                                        }}>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status</span>
-                                            <span style={{
-                                                padding: '4px 12px',
-                                                borderRadius: '8px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
+                                        <span
+                                            className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                            style={{
                                                 background: tx.status === 'COMPLETED'
-                                                    ? 'rgba(16, 185, 129, 0.15)'
-                                                    : 'rgba(251, 191, 36, 0.15)',
-                                                color: tx.status === 'COMPLETED' ? '#10b981' : '#fbbf24'
-                                            }}>
-                                                {tx.status}
-                                            </span>
-                                        </div>
-
-                                        {/* Date & Time */}
-                                        <div style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            padding: '12px 0',
-                                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
-                                        }}>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                <Clock size={14} /> Date & Time
-                                            </span>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                                {new Date(tx.createdAt).toLocaleDateString('en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    year: 'numeric'
-                                                })}, {new Date(tx.createdAt).toLocaleTimeString('en-US', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </span>
-                                        </div>
-
-                                        {/* Description */}
-                                        {tx.description && (
-                                            <div style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'flex-start',
-                                                padding: '12px 0',
-                                                gap: '20px'
-                                            }}>
-                                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                                                    <FileText size={14} /> Notes
-                                                </span>
-                                                <span style={{
-                                                    fontSize: '0.85rem',
-                                                    color: 'var(--text-secondary)',
-                                                    textAlign: 'right',
-                                                    wordBreak: 'break-word'
-                                                }}>
-                                                    {tx.description}
-                                                </span>
-                                            </div>
-                                        )}
+                                                    ? 'rgba(74, 222, 128, 0.1)'
+                                                    : 'rgba(250, 204, 21, 0.1)',
+                                                color: tx.status === 'COMPLETED' ? '#4ade80' : '#facc15',
+                                                border: tx.status === 'COMPLETED'
+                                                    ? '1px solid rgba(74, 222, 128, 0.3)'
+                                                    : '1px solid rgba(250, 204, 21, 0.3)'
+                                            }}
+                                        >
+                                            {tx.status}
+                                        </span>
                                     </div>
                                 </div>
+
+                                {/* Description */}
+                                {tx.description && (
+                                    <div className="pt-3 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                                        <p className="text-xs text-gray-400 truncate">{tx.description}</p>
+                                    </div>
+                                )}
                             </div>
                         );
                     })
                 )}
-            </div>
+            </main>
 
-            <style jsx>{`
-                @keyframes pulse {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.5; }
-                }
-            `}</style>
+            {/* Material Icons Font */}
+            <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
         </div>
     );
 }

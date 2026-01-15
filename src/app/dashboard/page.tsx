@@ -3,19 +3,6 @@
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import {
-    TrendingUp,
-    Users,
-    Package,
-    ArrowUpRight,
-    ArrowDownLeft,
-    LogOut,
-    Copy,
-    Clock,
-    Home,
-    Settings,
-    BarChart3
-} from "lucide-react";
 import Link from "next/link";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 
@@ -29,14 +16,11 @@ export default function ModernDashboard() {
     const [roiTimeLeft, setRoiTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
     useEffect(() => {
-        // Wait for session to finish loading before checking
         if (status === "loading") return;
-
         if (status === "unauthenticated") {
             router.push("/login");
             return;
         }
-
         if (status === "authenticated") {
             fetchDashboardData();
         }
@@ -46,9 +30,7 @@ export default function ModernDashboard() {
         const timer = setInterval(() => {
             const now = new Date();
             const nextROI = new Date();
-            // Set to 4:00 AM IST
             nextROI.setHours(4, 0, 0, 0);
-            // If we're past 4:00 AM today, set to tomorrow 4:00 AM
             if (now >= nextROI) {
                 nextROI.setDate(nextROI.getDate() + 1);
             }
@@ -73,7 +55,6 @@ export default function ModernDashboard() {
             const data = await res.json();
             if (res.ok) {
                 setUser(data);
-                // Fetch recent transactions
                 fetchTransactions();
             }
         } catch (err) {
@@ -100,258 +81,271 @@ export default function ModernDashboard() {
     }
 
     const formatTime = (num: number) => num.toString().padStart(2, '0');
-
-    const balanceCards = [
-        {
-            title: "Next ROI In",
-            amount: null,
-            countdown: `${formatTime(roiTimeLeft.hours)}:${formatTime(roiTimeLeft.minutes)}:${formatTime(roiTimeLeft.seconds)}`,
-            subtitle: "Next distribution",
-            gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            icon: "⏰"
-        },
-        {
-            title: "Active Investment",
-            amount: user.totalInvested || 0,
-            cardNumber: "•• INVESTED",
-            gradient: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-            icon: "📈"
-        },
-        {
-            title: "Total Earnings",
-            amount: user.totalEarnings || 0,
-            cardNumber: "•• MLM",
-            gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-            icon: "💎"
-        }
-    ];
-
-    const financeActions = [
-        { icon: <Package size={20} />, label: "Activate", color: "#667eea", link: "/dashboard/activate" },
-        { icon: <TrendingUp size={20} />, label: "ROI Stats", color: "#10b981", link: "/dashboard/transactions" },
-        { icon: <Users size={20} />, label: "Network", color: "#f59e0b", link: "/dashboard/network" },
-        { icon: <ArrowUpRight size={20} />, label: "Withdraw", color: "#ef4444", link: "/dashboard/withdraw" }
-    ];
+    const roiCountdown = `${formatTime(roiTimeLeft.hours)}:${formatTime(roiTimeLeft.minutes)}:${formatTime(roiTimeLeft.seconds)}`;
 
     return (
-        <div className="min-h-screen bg-primary">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-8">
-                {/* Header */}
-                <div className="flex justify-between items-center py-4 md:py-6 fade-in">
-                    <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 md:w-12 md:h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-bold text-lg" style={{ boxShadow: '0 0 15px rgba(102, 126, 234, 0.3)' }}>
-                            {user.name?.charAt(0) || "U"}
-                        </div>
-                        <div>
-                            <div className="text-base md:text-lg font-bold" style={{ color: 'var(--text-primary)', textShadow: '0 0 10px rgba(102, 126, 234, 0.3)' }}>
-                                Hello, {user.name || "User"}
-                            </div>
-                            <div className="text-xs md:text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                                Welcome back!
-                            </div>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => signOut({ callbackUrl: '/login' })}
-                        className="w-10 h-10 md:w-11 md:h-11 rounded-xl border border-glass-border bg-secondary flex items-center justify-center hover:bg-red-500/20 transition-colors"
-                        style={{ color: 'var(--accent-red)' }}
-                        title="Logout"
-                    >
-                        <LogOut size={20} />
-                    </button>
-                </div>
+        <div className="relative flex min-h-screen flex-col overflow-x-hidden pb-28" style={{ backgroundColor: '#0F0916' }}>
+            {/* Background Glow Effects */}
+            <div className="fixed top-[-10%] left-[-20%] h-64 w-64 rounded-full blur-[100px]" style={{ backgroundColor: 'rgba(139, 92, 246, 0.2)' }} />
+            <div className="fixed bottom-[10%] right-[-20%] h-64 w-64 rounded-full blur-[100px]" style={{ backgroundColor: 'rgba(192, 132, 252, 0.1)' }} />
 
-                {/* Total Balance */}
-                <div className="py-5 md:py-6">
-                    <div className="text-xs md:text-sm font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.6)', letterSpacing: '0.1em' }}>
-                        TOTAL BALANCE
-                    </div>
-                    <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight gradient-text">
-                        ${Number(user.balance).toFixed(2)}
-                    </div>
-                </div>
-
-                {/* Cards Section */}
-                <div className="mb-6 md:mb-8">
-                    <div className="flex justify-between items-center mb-3 md:mb-4">
-                        <span className="section-title-glow text-xs font-semibold uppercase tracking-wide">CARDS</span>
-                        <Link href="/dashboard/activate" className="text-xs font-semibold text-accent-blue hover:text-blue-400 transition-colors">
-                            Add +
-                        </Link>
-                    </div>
-                    {/* Mobile: Horizontal scroll, Tablet+: Grid */}
-                    <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scrollbar-hide pb-1">
-                        {balanceCards.map((card, idx) => (
-                            <div
-                                key={idx}
-                                className="min-w-[180px] sm:min-w-[200px] md:min-w-0 h-40 sm:h-44 md:h-48 rounded-2xl p-4 md:p-5 text-white snap-start flex-shrink-0 md:flex-shrink flex flex-col justify-between card-glow"
-                                style={{ background: card.gradient, border: '1px solid rgba(255, 255, 255, 0.1)' }}
-                            >
-                                <div className="flex gap-2 items-center text-sm opacity-90">
-                                    <span className="text-lg md:text-xl">{card.icon}</span>
-                                    <span className="text-xs md:text-sm">{card.title}</span>
-                                </div>
-                                {card.countdown ? (
-                                    <div>
-                                        <div className="text-2xl sm:text-3xl md:text-4xl font-bold font-mono tracking-wider">
-                                            {card.countdown}
-                                        </div>
-                                        <div className="text-xs opacity-70 mt-1">{card.subtitle}</div>
-                                    </div>
-                                ) : (
-                                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold">
-                                        ${Number(card.amount).toFixed(2)}
-                                    </div>
-                                )}
-                                {card.cardNumber && (
-                                    <div className="flex justify-between text-xs opacity-80">
-                                        <span>{card.cardNumber}</span>
-                                        <span>MLM</span>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Finance Actions - FIXED ALIGNMENT */}
-                <div className="mb-6 md:mb-8">
-                    <div className="section-title-glow text-xs font-semibold uppercase tracking-wide mb-4">FINANCE</div>
-                    <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4">
-                        {financeActions.map((action, idx) => (
-                            <Link
-                                key={idx}
-                                href={action.link}
-                                className="flex flex-col items-center gap-2 p-2 md:p-3 rounded-lg hover:bg-secondary/50 transition-colors active:scale-95"
-                            >
-                                <div
-                                    className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-xl flex items-center justify-center transition-transform hover:scale-105"
-                                    style={{ backgroundColor: `${action.color}20`, color: action.color }}
-                                >
-                                    <div className="md:scale-110 lg:scale-125">
-                                        {action.icon}
-                                    </div>
-                                </div>
-                                <span className="text-xs md:text-sm font-medium text-center leading-tight" style={{ color: 'var(--text-primary)' }}>
-                                    {action.label}
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Transaction History - NEW */}
-                <div className="mb-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="section-title-glow text-xs font-semibold uppercase tracking-wide">LAST TRANSACTIONS</span>
-                        {recentTransactions.length > 0 && (
-                            <Link
-                                href="/dashboard/transactions"
-                                className="text-xs font-semibold text-accent-blue hover:text-blue-400 transition-colors"
-                            >
-                                See all →
-                            </Link>
-                        )}
-                    </div>
-
-                    {recentTransactions.length === 0 ? (
-                        <div className="text-center py-8 px-4 bg-secondary rounded-xl border border-glass-border">
-                            <div className="text-4xl mb-3 opacity-50">📊</div>
-                            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                                No transactions yet
-                            </p>
-                            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                                Your transaction history will appear here
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {recentTransactions.map((tx: any) => {
-                                // Determine icon based on transaction type
-                                let icon;
-                                let isIncome = false;
-
-                                switch (tx.type?.toUpperCase()) {
-                                    case 'ROI':
-                                    case 'DAILY_ROI':
-                                        icon = <TrendingUp size={18} />;
-                                        isIncome = tx.amount > 0;
-                                        break;
-                                    case 'LEVEL_1_COMMISSION':
-                                    case 'LEVEL_2_COMMISSION':
-                                    case 'LEVEL_3_COMMISSION':
-                                    case 'LEVEL_4_COMMISSION':
-                                    case 'LEVEL_5_COMMISSION':
-                                    case 'REFERRAL_COMMISSION':
-                                        icon = <Users size={18} />;
-                                        isIncome = true;
-                                        break;
-                                    case 'PACKAGE_ACTIVATION':
-                                    case 'DEPOSIT':
-                                        icon = <Package size={18} />;
-                                        isIncome = true;
-                                        break;
-                                    case 'WITHDRAWAL':
-                                    case 'WITHDRAW':
-                                        icon = <ArrowDownLeft size={18} />;
-                                        isIncome = false;
-                                        break;
-                                    default:
-                                        icon = <ArrowUpRight size={18} />;
-                                        isIncome = tx.amount > 0;
-                                }
-
-                                return (
-                                    <div
-                                        key={tx.id}
-                                        className="flex items-center gap-3 p-3 bg-secondary rounded-xl border border-glass-border hover:border-glass-border/50 transition-colors"
-                                    >
-                                        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center flex-shrink-0 text-muted">
-                                            {icon}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-                                                {tx.description || tx.type}
-                                            </p>
-                                            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                                                {new Date(tx.createdAt).toLocaleDateString('en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </p>
-                                        </div>
-                                        <span className={`text-sm font-semibold tabular-nums ${isIncome ? 'text-accent-green' : 'text-accent-red'}`}>
-                                            {isIncome ? '+' : '-'}${Math.abs(Number(tx.amount)).toFixed(2)}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                {/* Referral Link */}
-                <div className="mb-6">
-                    <div className="flex justify-between items-center mb-3">
-                        <span className="section-title-glow text-xs font-semibold uppercase tracking-wide">REFERRAL LINK</span>
-                        <button
-                            className="text-xs font-semibold text-accent-blue flex items-center gap-1 hover:text-blue-400 transition-colors"
-                            onClick={() => {
-                                navigator.clipboard.writeText(`${window.location.origin}/register?ref=${user.referralCode}`);
+            {/* Header */}
+            <header className="flex items-center justify-between px-6 pt-8 pb-4">
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <div
+                            className="h-11 w-11 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                            style={{
+                                background: 'linear-gradient(135deg, #8B5CF6, #C084FC)',
+                                border: '2px solid rgba(139, 92, 246, 0.4)'
                             }}
                         >
-                            <Copy size={14} /> Copy
-                        </button>
+                            {user.name?.charAt(0) || "U"}
+                        </div>
+                        <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 bg-green-500" style={{ borderColor: '#0F0916' }} />
                     </div>
-                    <div className="neon-border-animated bg-secondary rounded-xl p-4 relative">
-                        <p className="text-sm font-mono break-all relative z-10" style={{ color: '#ffffff' }}>
-                            {window.location.origin}/register?ref={user.referralCode}
-                        </p>
+                    <div>
+                        <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-white/40">Portfolio</p>
+                        <h2 className="text-base font-bold text-white">{user.name || "User"}'s Hub</h2>
                     </div>
                 </div>
-            </div>
+                <button
+                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white transition-all active:scale-95 hover:bg-red-500/20"
+                >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </header>
+
+            {/* Total Assets Card */}
+            <section className="px-6 py-4">
+                <div
+                    className="relative overflow-hidden rounded-[2.5rem] p-8"
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1))',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                >
+                    {/* Wave Background */}
+                    <div className="absolute inset-0 z-0 opacity-40">
+                        <svg className="h-full w-full" preserveAspectRatio="none" viewBox="0 0 400 200">
+                            <path d="M0,150 C100,100 200,180 300,80 L400,120 L400,200 L0,200 Z" fill="url(#waveGradient)" />
+                            <defs>
+                                <linearGradient id="waveGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor="#8B5CF6" />
+                                    <stop offset="100%" stopColor="transparent" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-white/60">Total Assets</span>
+                            <span className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-1 text-[10px] font-bold text-green-400">
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                </svg>
+                                +{((Number(user.totalEarnings || 0) / Math.max(Number(user.totalInvested || 1), 1)) * 100).toFixed(1)}%
+                            </span>
+                        </div>
+                        <div className="mt-2">
+                            <h1 className="text-[2.6rem] font-extrabold tracking-tight text-white">
+                                ${Number(user.balance || 0).toFixed(2)}
+                            </h1>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="flex h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse" />
+                                <p className="text-sm font-medium text-white/60">
+                                    Next ROI credit in: <span className="text-purple-400">{roiCountdown}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Quick Actions */}
+            <section className="grid grid-cols-4 gap-2 px-6 py-6">
+                <Link href="/dashboard/deposit" className="flex flex-col items-center gap-2">
+                    <button className="group flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white transition-all hover:bg-purple-500 hover:border-purple-500 active:scale-95">
+                        <svg className="w-6 h-6 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </button>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Add</p>
+                </Link>
+                <Link href="/dashboard/network" className="flex flex-col items-center gap-2">
+                    <button className="group flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white transition-all hover:bg-purple-500 hover:border-purple-500 active:scale-95">
+                        <svg className="w-6 h-6 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </button>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Network</p>
+                </Link>
+                <Link href="/dashboard/transactions" className="flex flex-col items-center gap-2">
+                    <button className="group flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white transition-all hover:bg-purple-500 hover:border-purple-500 active:scale-95">
+                        <svg className="w-6 h-6 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">History</p>
+                </Link>
+                <Link href="/dashboard/withdraw" className="flex flex-col items-center gap-2">
+                    <button className="group flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white transition-all hover:bg-purple-500 hover:border-purple-500 active:scale-95">
+                        <svg className="w-6 h-6 transition-transform group-hover:translate-y-[-2px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                    </button>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Withdraw</p>
+                </Link>
+            </section>
+
+            {/* Stats Cards */}
+            <section className="grid grid-cols-2 gap-4 px-6">
+                <div className="rounded-3xl p-5 border border-white/5" style={{ backgroundColor: '#1E142B' }}>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl mb-3" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>
+                        <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                    <p className="text-xs font-medium text-white/40">Daily ROI</p>
+                    <div className="mt-1 flex items-baseline gap-1">
+                        <h3 className="text-xl font-bold text-white">1.00%</h3>
+                        <span className="text-[10px] text-green-400">Fixed</span>
+                    </div>
+                </div>
+                <div className="rounded-3xl p-5 border border-white/5" style={{ backgroundColor: '#1E142B' }}>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl mb-3" style={{ backgroundColor: 'rgba(192, 132, 252, 0.1)' }}>
+                        <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p className="text-xs font-medium text-white/40">Total Income</p>
+                    <div className="mt-1">
+                        <h3 className="text-xl font-bold text-white">${Number(user.totalEarnings || 0).toFixed(2)}</h3>
+                    </div>
+                </div>
+            </section>
+
+            {/* Income Overview Chart */}
+            <section className="mt-6 px-6">
+                <div className="rounded-[2rem] p-6 border border-white/5 overflow-hidden" style={{ backgroundColor: '#1E142B' }}>
+                    <div className="mb-6 flex items-center justify-between">
+                        <div>
+                            <h4 className="text-sm font-bold text-white">Income Overview</h4>
+                            <p className="text-[10px] text-white/40">Monthly performance tracking</p>
+                        </div>
+                        <div className="flex gap-2 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" style={{ filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.6))' }} />
+                            <span className="text-[10px] text-purple-400 font-semibold">LIVE</span>
+                        </div>
+                    </div>
+                    <div className="relative h-40 w-full overflow-visible">
+                        {/* Floating particles */}
+                        <div className="absolute inset-0 pointer-events-none">
+                            <div className="absolute top-4 left-8 w-2 h-2 rounded-full bg-purple-500/30 animate-float-slow" />
+                            <div className="absolute top-12 right-12 w-1.5 h-1.5 rounded-full bg-purple-400/40 animate-float-medium" />
+                            <div className="absolute bottom-8 left-1/4 w-1 h-1 rounded-full bg-purple-300/50 animate-float-fast" />
+                            <div className="absolute top-1/3 right-1/4 w-2.5 h-2.5 rounded-full bg-purple-500/20 animate-float-slow" style={{ animationDelay: '1s' }} />
+                            <div className="absolute bottom-1/4 right-1/3 w-1.5 h-1.5 rounded-full bg-purple-400/30 animate-float-medium" style={{ animationDelay: '0.5s' }} />
+                        </div>
+
+                        <svg className="h-full w-full overflow-visible animate-chart-float" viewBox="0 0 400 160">
+                            <defs>
+                                <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.4" />
+                                    <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
+                                </linearGradient>
+                                <filter id="glow">
+                                    <feGaussianBlur result="coloredBlur" stdDeviation="3" />
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            <path d="M0,140 Q50,130 80,60 T160,80 T240,30 T320,70 T400,20 L400,160 L0,160 Z" fill="url(#chartGradient)" className="animate-pulse-slow" />
+                            <path d="M0,140 Q50,130 80,60 T160,80 T240,30 T320,70 T400,20" fill="none" filter="url(#glow)" stroke="#8B5CF6" strokeLinecap="round" strokeWidth="3" />
+                            {/* Animated dot on peak */}
+                            <circle cx="240" cy="30" fill="#8B5CF6" r="5" className="animate-ping-slow" style={{ transformOrigin: '240px 30px' }} />
+                            <circle cx="240" cy="30" fill="#8B5CF6" r="4" style={{ filter: 'drop-shadow(0 0 12px rgba(139, 92, 246, 0.8))' }} />
+                            <circle cx="240" cy="30" fill="#8B5CF6" fillOpacity="0.2" r="12" className="animate-pulse" />
+                            {/* Additional animated points */}
+                            <circle cx="80" cy="60" fill="#C084FC" r="3" className="animate-float-dot" style={{ filter: 'drop-shadow(0 0 6px rgba(192, 132, 252, 0.6))' }} />
+                            <circle cx="320" cy="70" fill="#A855F7" r="3" className="animate-float-dot" style={{ animationDelay: '1s', filter: 'drop-shadow(0 0 6px rgba(168, 85, 247, 0.6))' }} />
+                        </svg>
+                    </div>
+                    <div className="mt-4 flex justify-between px-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
+                        <span>W1</span>
+                        <span>W2</span>
+                        <span>W3</span>
+                        <span>W4</span>
+                    </div>
+                </div>
+            </section>
+
+            {/* Bottom navigation is handled by layout.tsx */}
+
+            {/* Custom Styles */}
+            <style jsx>{`
+                @keyframes float {
+                    0% { transform: translateY(0px); }
+                    50% { transform: translateY(-5px); }
+                    100% { transform: translateY(0px); }
+                }
+                .animate-float-slow {
+                    animation: floatSlow 4s ease-in-out infinite;
+                }
+                .animate-float-medium {
+                    animation: floatMedium 3s ease-in-out infinite;
+                }
+                .animate-float-fast {
+                    animation: floatFast 2s ease-in-out infinite;
+                }
+                .animate-float-dot {
+                    animation: floatDot 2.5s ease-in-out infinite;
+                }
+                .animate-chart-float {
+                    animation: chartFloat 6s ease-in-out infinite;
+                }
+                .animate-ping-slow {
+                    animation: pingSlow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+                }
+                .animate-pulse-slow {
+                    animation: pulseSlow 4s ease-in-out infinite;
+                }
+                @keyframes floatSlow {
+                    0%, 100% { transform: translateY(0px) scale(1); opacity: 0.3; }
+                    50% { transform: translateY(-12px) scale(1.2); opacity: 0.6; }
+                }
+                @keyframes floatMedium {
+                    0%, 100% { transform: translateY(0px) scale(1); opacity: 0.4; }
+                    50% { transform: translateY(-8px) scale(1.1); opacity: 0.7; }
+                }
+                @keyframes floatFast {
+                    0%, 100% { transform: translateY(0px); opacity: 0.5; }
+                    50% { transform: translateY(-6px); opacity: 0.8; }
+                }
+                @keyframes floatDot {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-4px); }
+                }
+                @keyframes chartFloat {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-3px); }
+                }
+                @keyframes pingSlow {
+                    0% { transform: scale(1); opacity: 1; }
+                    75%, 100% { transform: scale(2); opacity: 0; }
+                }
+                @keyframes pulseSlow {
+                    0%, 100% { opacity: 0.4; }
+                    50% { opacity: 0.6; }
+                }
+            `}</style>
         </div>
     );
 }
