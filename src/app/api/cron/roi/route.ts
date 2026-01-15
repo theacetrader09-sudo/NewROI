@@ -14,7 +14,7 @@ export async function GET(req: Request) {
         // Check if this is a manual trigger (from admin panel)
         const isManual = searchParams.get("manual") === "true";
         // TESTING: Force re-run to allow double credit for same day (remove after testing)
-        const forceRerun = true; // searchParams.get("force") === "true";
+        const forceRerun = searchParams.get("force") === "true";
 
         const result = await distributeDailyROI(isManual, forceRerun);
 
