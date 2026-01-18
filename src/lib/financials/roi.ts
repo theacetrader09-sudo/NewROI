@@ -75,8 +75,18 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
 
             // 4. Atomic Transaction for ROI Credit, Logging & Commission Distribution
             await prisma.$transaction(async (tx) => {
-                // 4a. Update user balance with ROI
-                const prevBalance = Number(investment.user.balance);
+                // 4a. CRITICAL FIX: Always read FRESH balance from database inside transaction
+                // This prevents stale balance issues when multiple investments/commissions are processed
+                const freshUser = await tx.user.findUnique({
+                    where: { id: investment.userId },
+                    select: { balance: true }
+                });
+
+                if (!freshUser) {
+                    throw new Error(`User ${investment.userId} not found during ROI distribution`);
+                }
+
+                const prevBalance = Number(freshUser.balance);
                 const newBalance = prevBalance + roiAmount;
 
                 await tx.user.update({

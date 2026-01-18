@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
+import AnnouncementPopup from "@/components/AnnouncementPopup";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -85,6 +86,9 @@ export default function DashboardLayout({
 
   return (
     <div style={{ display: 'flex', background: '#0F0916', minHeight: '100vh' }}>
+      {/* Announcement Popup - Shows once per session */}
+      <AnnouncementPopup />
+
       {/* Desktop Sidebar - Hidden on mobile */}
       {!isMobile && <Sidebar />}
 

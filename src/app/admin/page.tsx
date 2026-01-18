@@ -8,7 +8,8 @@ import {
     Hourglass,
     BarChart3,
     Settings,
-    ArrowRight
+    ArrowRight,
+    Megaphone
 } from "lucide-react";
 import ManualRoiButton from "@/components/admin/ManualRoiButton";
 
@@ -100,6 +101,13 @@ export default async function AdminDashboard() {
                                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Configure ROI, commissions, and platform modes.</p>
                             </div>
                             <Settings size={18} />
+                        </Link>
+                        <Link href="/admin/announcements" className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px' }}>
+                            <div>
+                                <h4 style={{ fontWeight: '700' }}>Announcements</h4>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Create popup banners for all users.</p>
+                            </div>
+                            <Megaphone size={18} />
                         </Link>
                     </div>
                 </div>

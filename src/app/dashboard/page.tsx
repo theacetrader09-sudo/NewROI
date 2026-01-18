@@ -154,7 +154,7 @@ export default function ModernDashboard() {
                         </div>
                         <div className="mt-2">
                             <h1 className="text-[2.6rem] font-extrabold tracking-tight text-white">
-                                ${Number(user.balance || 0).toFixed(2)}
+                                ${Number(user.totalEarnings || 0).toFixed(2)}
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="flex h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse" />
