@@ -144,7 +144,7 @@ export default function ModernDashboard() {
 
                     <div className="relative z-10">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-white/60">Total Assets</span>
+                            <span className="text-xs font-semibold text-white/60">Available Balance</span>
                             <span className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-1 text-[10px] font-bold text-green-400">
                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -154,7 +154,7 @@ export default function ModernDashboard() {
                         </div>
                         <div className="mt-2">
                             <h1 className="text-[2.6rem] font-extrabold tracking-tight text-white">
-                                ${Number(user.totalEarnings || 0).toFixed(2)}
+                                ${Number(user.balance || 0).toFixed(2)}
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="flex h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse" />

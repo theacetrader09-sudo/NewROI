@@ -204,13 +204,16 @@ export async function POST(req: Request) {
                     }
                 });
 
-                await prisma.user.update({
-                    where: { id: user.id },
-                    data: {
-                        balance: { increment: actualAmount }
-                    }
-                });
+                // ❌ REMOVED: Do NOT add deposit to balance
+                // Deposits create investments - only ROI earnings add to balance
+                // await prisma.user.update({
+                //     where: { id: user.id },
+                //     data: {
+                //         balance: { increment: actualAmount }
+                //     }
+                // });
 
+                // Transaction record for tracking only (balance unchanged)
                 await prisma.transaction.create({
                     data: {
                         userId: user.id,
@@ -219,7 +222,7 @@ export async function POST(req: Request) {
                         description: `Package activated - 1% Daily ROI started (TXID: ${txid.substring(0, 15)}...)`,
                         status: "COMPLETED",
                         previousBalance: Number(user.balance),
-                        newBalance: Number(user.balance) + actualAmount
+                        newBalance: Number(user.balance) // Balance unchanged for deposits
                     }
                 });
 
