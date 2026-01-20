@@ -72,11 +72,11 @@ export async function POST(req: Request) {
             await tx.transaction.create({
                 data: {
                     userId: user.id,
-                    type: "DEPOSIT", // Using DEPOSIT type for investment activation
+                    type: "INVESTMENT", // Package activation from wallet balance
                     amount: activationAmount,
                     previousBalance: prevBalance,
                     newBalance: newBalance,
-                    description: `Package activated: $${activationAmount} investment`,
+                    description: `Package activated: $${activationAmount} - 1% Daily ROI started`,
                     status: "COMPLETED",
                     referenceId: investment.id,
                 },

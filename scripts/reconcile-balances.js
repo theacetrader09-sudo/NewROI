@@ -58,6 +58,10 @@ async function reconcileAllBalances() {
             } else if (tx.type === 'WITHDRAWAL') {
                 // Withdrawals subtract from balance
                 calculatedBalance -= amount;
+            } else if (tx.type === 'INVESTMENT') {
+                // INVESTMENT transactions (package activation) subtract from balance
+                // User moves money from balance into an investment
+                calculatedBalance -= amount;
             } else if (tx.type === 'DEPOSIT') {
                 // ONLY "wallet mode" deposits should add to balance
                 // Package mode deposits create investments and should NOT add to balance
