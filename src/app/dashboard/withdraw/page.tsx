@@ -12,6 +12,7 @@ export default function WithdrawPage() {
     const [balance, setBalance] = useState(0);
 
     const NETWORK_FEE = 0.29;
+    const PLATFORM_FEE_PERCENT = 5; // 5% withdrawal fee
     const MIN_WITHDRAW = 10;
 
     useEffect(() => {
@@ -29,13 +30,18 @@ export default function WithdrawPage() {
     };
 
     const handleMax = () => {
-        const maxAmount = Math.max(0, balance - NETWORK_FEE);
-        setAmount(maxAmount.toFixed(2));
+        setAmount(balance.toFixed(2));
+    };
+
+    const getPlatformFee = () => {
+        const amt = parseFloat(amount) || 0;
+        return (amt * PLATFORM_FEE_PERCENT) / 100;
     };
 
     const getReceiveAmount = () => {
         const amt = parseFloat(amount) || 0;
-        return Math.max(0, amt - NETWORK_FEE);
+        const platformFee = getPlatformFee();
+        return Math.max(0, amt - platformFee - NETWORK_FEE);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -218,8 +224,12 @@ export default function WithdrawPage() {
                         <p className="text-white font-medium">{parseFloat(amount || '0').toFixed(2)} USDT</p>
                     </div>
                     <div className="flex justify-between items-center text-sm">
+                        <p style={{ color: '#ab9db9' }}>Platform Fee (5%)</p>
+                        <p className="text-red-400 font-medium">-{getPlatformFee().toFixed(2)} USDT</p>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
                         <p style={{ color: '#ab9db9' }}>Network Fee</p>
-                        <p className="text-white font-medium">{NETWORK_FEE.toFixed(2)} USDT</p>
+                        <p className="text-red-400 font-medium">-{NETWORK_FEE.toFixed(2)} USDT</p>
                     </div>
                     <div className="border-t border-dashed my-2" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
                     <div className="flex justify-between items-center text-base">

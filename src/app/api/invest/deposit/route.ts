@@ -4,9 +4,6 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { verifyTransaction, isValidTxHash } from "@/lib/bscscan";
 
-// Deposit Address - must match frontend
-const DEPOSIT_ADDRESS = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
-
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -134,8 +131,19 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "This TXID has already been used" }, { status: 400 });
         }
 
+        // Get admin wallet address from settings
+        let depositAddress = "0x15C1eC04D1Db26ff82d66b0654790335292BdB66"; // Default fallback
+        try {
+            const settings = await prisma.systemSettings.findFirst();
+            if (settings?.adminWallet) {
+                depositAddress = settings.adminWallet;
+            }
+        } catch (err) {
+            console.error("Failed to fetch admin wallet from settings, using default:", err);
+        }
+
         // AUTO-VERIFICATION: Verify transaction on blockchain
-        const verification = await verifyTransaction(txid, DEPOSIT_ADDRESS, depositAmount);
+        const verification = await verifyTransaction(txid, depositAddress, depositAmount);
         const actualAmount = verification.valid && verification.amount ? verification.amount : depositAmount;
         const isVerified = verification.valid;
 

@@ -14,12 +14,13 @@ export default function DepositPage() {
     const [message, setMessage] = useState({ type: "", text: "" });
     const [copied, setCopied] = useState(false);
     const [balance, setBalance] = useState(0);
+    const [adminWallet, setAdminWallet] = useState("0x15C1eC04D1Db26ff82d66b0654790335292BdB66"); // Default fallback
 
-    const ADMIN_WALLET = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
     const PROCESSING_FEE = paymentMethod === 'wallet_balance' ? 0 : 1.00;
 
     useEffect(() => {
         fetchBalance();
+        fetchAdminWallet();
     }, []);
 
     const fetchBalance = async () => {
@@ -34,8 +35,20 @@ export default function DepositPage() {
         }
     };
 
+    const fetchAdminWallet = async () => {
+        try {
+            const res = await fetch("/api/settings/public");
+            const data = await res.json();
+            if (res.ok && data.adminWallet) {
+                setAdminWallet(data.adminWallet);
+            }
+        } catch (err) {
+            console.error("Failed to fetch admin wallet, using default");
+        }
+    };
+
     const handleCopy = () => {
-        navigator.clipboard.writeText(ADMIN_WALLET);
+        navigator.clipboard.writeText(adminWallet);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -268,7 +281,10 @@ export default function DepositPage() {
                                     placeholder="0.00"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full h-12 pl-9 pr-16 bg-[#1a1025] border border-white/10 rounded-xl text-white text-lg font-bold placeholder:text-white/20 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-inner outline-none"
+                                    className={`w-full h-12 pl-9 pr-16 bg-[#1a1025] border rounded-xl text-white text-lg font-bold placeholder:text-white/20 focus:ring-1 transition-all shadow-inner outline-none ${amount && Number(amount) > 0 && Number(amount) < 10
+                                        ? 'border-red-500/50 focus:ring-red-500 focus:border-red-500'
+                                        : 'border-white/10 focus:ring-purple-500 focus:border-purple-500'
+                                        }`}
                                 />
                                 <button
                                     onClick={() => setAmount(balance.toString())}
@@ -277,6 +293,20 @@ export default function DepositPage() {
                                     Max
                                 </button>
                             </div>
+
+                            {/* Real-time validation warning */}
+                            {amount && Number(amount) > 0 && Number(amount) < 10 && (
+                                <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30 animate-pulse">
+                                    <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <div className="flex-1">
+                                        <p className="text-red-400 text-sm font-semibold">Minimum Deposit: $10</p>
+                                        <p className="text-red-400/80 text-xs mt-0.5">Please enter at least $10 to proceed with your deposit.</p>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex gap-2 overflow-x-auto pb-1">
                                 {quickAmounts.map((amt) => (
                                     <button
@@ -307,8 +337,8 @@ export default function DepositPage() {
                             <button
                                 onClick={() => setPaymentMethod('usdt')}
                                 className={`w-full flex items-center justify-between p-3 rounded-xl border relative overflow-hidden transition-all ${paymentMethod === 'usdt'
-                                        ? 'border-purple-500/50 bg-gradient-to-r from-purple-500/10 to-transparent'
-                                        : 'border-white/10 bg-white/5 hover:bg-white/10'
+                                    ? 'border-purple-500/50 bg-gradient-to-r from-purple-500/10 to-transparent'
+                                    : 'border-white/10 bg-white/5 hover:bg-white/10'
                                     }`}
                             >
                                 <div className="flex items-center gap-3 relative z-10">
@@ -335,10 +365,10 @@ export default function DepositPage() {
                                     onClick={() => setPaymentMethod('wallet_balance')}
                                     disabled={balance < 10}
                                     className={`w-full flex items-center justify-between p-3 rounded-xl border relative overflow-hidden transition-all ${paymentMethod === 'wallet_balance'
-                                            ? 'border-purple-500/50 bg-gradient-to-r from-purple-500/10 to-transparent'
-                                            : balance < 10
-                                                ? 'border-white/5 bg-white/5 opacity-50 cursor-not-allowed'
-                                                : 'border-white/10 bg-white/5 hover:bg-white/10'
+                                        ? 'border-purple-500/50 bg-gradient-to-r from-purple-500/10 to-transparent'
+                                        : balance < 10
+                                            ? 'border-white/5 bg-white/5 opacity-50 cursor-not-allowed'
+                                            : 'border-white/10 bg-white/5 hover:bg-white/10'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3 relative z-10">
@@ -381,7 +411,7 @@ export default function DepositPage() {
                             >
                                 <p className="text-white/50 text-xs mb-2">Send USDT (BEP20) to:</p>
                                 <div className="flex items-center gap-2">
-                                    <code className="text-xs text-white/80 break-all flex-1">{ADMIN_WALLET}</code>
+                                    <code className="text-xs text-white/80 break-all flex-1">{adminWallet}</code>
                                     <button
                                         onClick={handleCopy}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${copied
