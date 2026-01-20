@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
+import ActiveInvestmentCard from "@/components/dashboard/ActiveInvestmentCard";
 
 export default function ModernDashboard() {
     const { data: session, status } = useSession();
@@ -201,6 +202,11 @@ export default function ModernDashboard() {
                     </button>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Withdraw</p>
                 </Link>
+            </section>
+
+            {/* Active Investment Card */}
+            <section className="px-6 pb-6">
+                <ActiveInvestmentCard user={user} />
             </section>
 
             {/* Stats Cards */}
