@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, X, AlertTriangle } from "lucide-react";
 
-export default function ApproveButton({ id }: { id: string }) {
+export default function ApproveButton({ id, isTransaction = false }: { id: string; isTransaction?: boolean }) {
     const [loading, setLoading] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const router = useRouter();
@@ -17,7 +17,7 @@ export default function ApproveButton({ id }: { id: string }) {
             const res = await fetch("/api/admin/deposits/approve", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id }),
+                body: JSON.stringify({ id, isTransaction }),
             });
 
             if (!res.ok) {

@@ -11,12 +11,25 @@ export default async function AdminDepositsPage() {
         redirect("/dashboard");
     }
 
-    // Fetch pending deposits
-    const pendingDeposits = await prisma.investment.findMany({
+    // Fetch pending deposits (both package investments and wallet deposits)
+    const pendingInvestments = await prisma.investment.findMany({
         where: { status: "PENDING" },
         include: { user: true },
         orderBy: { createdAt: 'desc' }
     });
+
+    // Also fetch pending wallet deposits (DEPOSIT transactions with PENDING status)
+    const pendingWalletDeposits = await prisma.transaction.findMany({
+        where: {
+            type: "DEPOSIT",
+            status: "PENDING"
+        },
+        include: { user: true },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    // Combine both lists
+    const pendingDeposits = [...pendingInvestments, ...pendingWalletDeposits];
 
     // Fetch approved deposits (last 50)
     const approvedDeposits = await prisma.investment.findMany({
@@ -43,7 +56,7 @@ export default async function AdminDepositsPage() {
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {pendingDeposits.map((dep) => (
-                            <div key={dep.id} className="glass" style={{ 
+                            <div key={dep.id} className="glass" style={{
                                 padding: '20px',
                                 borderRadius: '16px',
                                 border: '1px solid rgba(251, 191, 36, 0.3)',
@@ -54,9 +67,9 @@ export default async function AdminDepositsPage() {
                                         <div style={{ fontWeight: '700', fontSize: '1rem' }}>{dep.user.name}</div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{dep.user.email}</div>
                                     </div>
-                                    <div style={{ 
-                                        fontSize: '1.2rem', 
-                                        fontWeight: '800', 
+                                    <div style={{
+                                        fontSize: '1.2rem',
+                                        fontWeight: '800',
                                         color: 'var(--accent-green)',
                                         background: 'rgba(16, 185, 129, 0.1)',
                                         padding: '6px 14px',
@@ -65,27 +78,40 @@ export default async function AdminDepositsPage() {
                                         ${Number(dep.amount).toFixed(2)}
                                     </div>
                                 </div>
-                                
+
                                 <div style={{ marginBottom: '16px' }}>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>TXID</div>
-                                    <code style={{ 
-                                        fontSize: '0.75rem', 
-                                        color: 'var(--accent-blue)', 
-                                        background: 'rgba(59, 130, 246, 0.1)', 
-                                        padding: '8px 12px', 
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                                        {'txid' in dep ? 'TXID' : 'DESCRIPTION'}
+                                    </div>
+                                    <code style={{
+                                        fontSize: '0.75rem',
+                                        color: 'var(--accent-blue)',
+                                        background: 'rgba(59, 130, 246, 0.1)',
+                                        padding: '8px 12px',
                                         borderRadius: '8px',
                                         display: 'block',
                                         wordBreak: 'break-all'
                                     }}>
-                                        {dep.txid}
+                                        {'txid' in dep ? (dep as any).txid : (dep as any).description}
                                     </code>
                                 </div>
-                                
+
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                         {new Date(dep.createdAt).toLocaleDateString()} {new Date(dep.createdAt).toLocaleTimeString()}
+                                        <span style={{
+                                            marginLeft: '8px',
+                                            padding: '2px 8px',
+                                            borderRadius: '6px',
+                                            fontSize: '0.7rem',
+                                            fontWeight: '600',
+                                            background: 'txid' in dep ? 'rgba(168, 85, 247, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                                            color: 'txid' in dep ? '#a855f7' : '#3b82f6'
+                                        }}>
+                                            {'txid' in dep ? 'Package' : 'Wallet'}
+                                        </span>
                                     </div>
-                                    <ApproveButton id={dep.id} />
+                                    <ApproveButton id={dep.id} isTransaction={'description' in dep} />
                                 </div>
                             </div>
                         ))}
@@ -108,7 +134,7 @@ export default async function AdminDepositsPage() {
                     </div>
                 ) : (
                     approvedDeposits.map((dep) => (
-                        <div key={dep.id} className="glass" style={{ 
+                        <div key={dep.id} className="glass" style={{
                             padding: '16px 20px',
                             borderRadius: '12px',
                             display: 'flex',
@@ -121,15 +147,15 @@ export default async function AdminDepositsPage() {
                                 <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{dep.user.name}</div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{dep.user.email}</div>
                             </div>
-                            
+
                             <div style={{ fontWeight: '700', color: 'var(--accent-green)', minWidth: '80px' }}>
                                 ${Number(dep.amount).toFixed(2)}
                             </div>
-                            
+
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: '100px' }}>
                                 {new Date(dep.createdAt).toLocaleDateString()}
                             </div>
-                            
+
                             {dep.approvalMethod === 'AUTO' ? (
                                 <span style={{
                                     display: 'inline-flex',
