@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { verifyTransaction, isValidTxHash } from "@/lib/bscscan";
+import { isValidTxHash } from "@/lib/bscscan";
 
 export async function POST(req: Request) {
     try {
@@ -131,138 +131,51 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "This TXID has already been used" }, { status: 400 });
         }
 
-        // Get admin wallet address from settings
-        let depositAddress = "0x15C1eC04D1Db26ff82d66b0654790335292BdB66"; // Default fallback
-        try {
-            const settings = await prisma.systemSettings.findFirst();
-            if (settings?.adminWallet) {
-                depositAddress = settings.adminWallet;
-            }
-        } catch (err) {
-            console.error("Failed to fetch admin wallet from settings, using default:", err);
-        }
-
-        // AUTO-VERIFICATION: Verify transaction on blockchain
-        const verification = await verifyTransaction(txid, depositAddress, depositAmount);
-        const actualAmount = verification.valid && verification.amount ? verification.amount : depositAmount;
-        const isVerified = verification.valid;
+        // All deposits now go through manual approval
+        // No automatic verification - admin will approve after notification
 
         if (depositMode === "wallet") {
-            // === WALLET MODE: Just add to balance, no investment/ROI ===
+            // === WALLET MODE: Just add to balance after manual approval ===
 
-            if (isVerified) {
-                await prisma.user.update({
-                    where: { id: user.id },
-                    data: {
-                        balance: { increment: actualAmount }
-                    }
-                });
-
-                await prisma.transaction.create({
-                    data: {
-                        userId: user.id,
-                        type: "DEPOSIT",
-                        amount: actualAmount,
-                        description: `Wallet deposit - Auto-verified (TXID: ${txid.substring(0, 15)}...)`,
-                        status: "COMPLETED",
-                        previousBalance: Number(user.balance),
-                        newBalance: Number(user.balance) + actualAmount
-                    }
-                });
-
-                return NextResponse.json({
-                    message: "✅ Deposit verified and added to your wallet!",
-                    verified: true,
-                    amount: actualAmount,
-                    mode: "wallet"
-                }, { status: 201 });
-            } else {
-                await prisma.transaction.create({
-                    data: {
-                        userId: user.id,
-                        type: "DEPOSIT",
-                        amount: depositAmount,
-                        description: `Wallet deposit - Pending review (TXID: ${txid.substring(0, 15)}...)`,
-                        status: "PENDING",
-                        previousBalance: Number(user.balance),
-                        newBalance: Number(user.balance)
-                    }
-                });
-
-                return NextResponse.json({
-                    message: "⏳ Deposit submitted for manual review. Will be added to wallet after approval.",
-                    verified: false,
+            // Create pending transaction record
+            await prisma.transaction.create({
+                data: {
+                    userId: user.id,
+                    type: "DEPOSIT",
                     amount: depositAmount,
-                    mode: "wallet"
-                }, { status: 201 });
-            }
+                    description: `Wallet deposit - Pending approval (TXID: ${txid.substring(0, 15)}...)`,
+                    status: "PENDING",
+                    previousBalance: Number(user.balance),
+                    newBalance: Number(user.balance)
+                }
+            });
+
+            return NextResponse.json({
+                message: "⏳ Deposit submitted for manual review. Will be added to wallet after approval.",
+                verified: false,
+                amount: depositAmount,
+                mode: "wallet"
+            }, { status: 201 });
 
         } else {
-            // === PACKAGE MODE: Create investment for ROI ===
+            // === PACKAGE MODE: Create investment pending approval ===
 
-            if (isVerified) {
-                const investment = await prisma.investment.create({
-                    data: {
-                        userId: user.id,
-                        amount: actualAmount,
-                        txid: txid,
-                        status: "ACTIVE",
-                        roiRate: 1.0,
-                        approvalMethod: "AUTO",
-                    }
-                });
+            const investment = await prisma.investment.create({
+                data: {
+                    userId: user.id,
+                    amount: depositAmount,
+                    txid: txid,
+                    status: "PENDING", // Always pending - requires manual approval
+                    roiRate: 1.0,
+                }
+            });
 
-                // ❌ REMOVED: Do NOT add deposit to balance
-                // Deposits create investments - only ROI earnings add to balance
-                // await prisma.user.update({
-                //     where: { id: user.id },
-                //     data: {
-                //         balance: { increment: actualAmount }
-                //     }
-                // });
-
-                // Transaction record for tracking only (balance unchanged)
-                await prisma.transaction.create({
-                    data: {
-                        userId: user.id,
-                        type: "DEPOSIT",
-                        amount: actualAmount,
-                        description: `Package activated - 1% Daily ROI started (TXID: ${txid.substring(0, 15)}...)`,
-                        status: "COMPLETED",
-                        previousBalance: Number(user.balance),
-                        newBalance: Number(user.balance) // Balance unchanged for deposits
-                    }
-                });
-
-                return NextResponse.json({
-                    message: "✅ Package activated! 1% daily ROI has started.",
-                    investmentId: investment.id,
-                    verified: true,
-                    amount: actualAmount,
-                    mode: "package"
-                }, { status: 201 });
-
-            } else {
-                const investment = await prisma.investment.create({
-                    data: {
-                        userId: user.id,
-                        amount: depositAmount,
-                        txid: txid,
-                        status: "PENDING",
-                        roiRate: 1.0,
-                    }
-                });
-
-                return NextResponse.json({
-                    message: verification.error
-                        ? `⏳ Package submitted for manual review. Auto-verification issue: ${verification.error}`
-                        : "⏳ Package submitted. ROI will start after admin approval.",
-                    investmentId: investment.id,
-                    verified: false,
-                    reason: verification.error,
-                    mode: "package"
-                }, { status: 201 });
-            }
+            return NextResponse.json({
+                message: "⏳ Package submitted. ROI will start after admin approval.",
+                investmentId: investment.id,
+                verified: false,
+                mode: "package"
+            }, { status: 201 });
         }
 
     } catch (error: any) {
