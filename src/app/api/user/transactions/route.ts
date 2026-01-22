@@ -68,6 +68,7 @@ export async function GET(req: Request) {
             where: {
                 userId: (session.user as any).id,
                 ...(type && { type: type as any }),
+                type: { not: "FEE" }, // Hide FEE transactions from user view
                 ...dateCondition
             },
             orderBy: { createdAt: "desc" },
