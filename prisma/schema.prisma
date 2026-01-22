@@ -17,6 +17,7 @@ model User {
   password  String
   name      String?
   role      String   @default("USER") // USER or SUPERADMIN
+  verified  Boolean  @default(false)  // Email verification status
   
   balance       Decimal  @default(0) @db.Decimal(18, 2)  // Changed from Float
   referralCode  String   @unique
@@ -31,6 +32,7 @@ model User {
   investments  Investment[]
   transactions Transaction[]
   roiLogs      RoiLog[]
+  otps         OTP[]
 
   @@index([email])
   @@index([referralCode])
@@ -125,4 +127,20 @@ model Announcement {
   updatedAt   DateTime  @updatedAt
   
   @@index([isActive])
+}
+
+model OTP {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String   // 6-digit OTP code
+  type      String   // WITHDRAWAL or SIGNUP
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([code])
+  @@index([expiresAt])
 }

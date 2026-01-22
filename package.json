@@ -21,7 +21,8 @@
     "node-cron": "^4.2.1",
     "prisma": "^6.19.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "resend": "^6.8.0"
   },
   "devDependencies": {
     "@types/node": "^20",

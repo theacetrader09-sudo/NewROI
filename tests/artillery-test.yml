@@ -1,0 +1,87 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up - 5 users/second"
+    - duration: 120
+      arrivalRate: 20
+      name: "Sustained load - 20 users/second"
+    - duration: 60
+      arrivalRate: 50
+      name: "Spike test - 50 users/second"
+  
+scenarios:
+  # Test user registration flow
+  - name: "User Registration"
+    weight: 3
+    flow:
+      - get:
+          url: "/signup"
+      - think: 2
+      - post:
+          url: "/api/auth/signup"
+          json:
+            email: "test{{ $randomNumber(1, 999999) }}@example.com"
+            password: "Test123!@#"
+            name: "Test User {{ $randomNumber() }}"
+            referralCode: "WELCOME"
+          capture:
+            - json: "$.userId"
+              as: "userId"
+      - think: 1
+
+  # Test login flow
+  - name: "User Login"
+    weight: 5
+    flow:
+      - get:
+          url: "/login"
+      - think: 1
+      - post:
+          url: "/api/auth/signin"
+          json:
+            email: "test@example.com"
+            password: "Test123!@#"
+      - think: 1
+
+  # Test dashboard access
+  - name: "Dashboard Access"
+    weight: 10
+    flow:
+      - get:
+          url: "/"
+      - get:
+          url: "/dashboard"
+      - think: 3
+      - get:
+          url: "/dashboard/deposit"
+      - think: 2
+      - get:
+          url: "/dashboard/withdraw"
+      - think: 2
+      - get:
+          url: "/dashboard/transactions"
+      - think: 1
+
+  # Test deposit page load
+  - name: "Deposit Page Performance"
+    weight: 7
+    flow:
+      - get:
+          url: "/dashboard/deposit"
+      - think: 5
+      - get:
+          url: "/api/settings/public"
+      - think: 1
+
+  # Test API endpoints
+  - name: "API Performance"
+    weight: 8
+    flow:
+      - get:
+          url: "/api/user/profile"
+      - think: 1
+      - get:
+          url: "/api/user/transactions"
+      - think: 2

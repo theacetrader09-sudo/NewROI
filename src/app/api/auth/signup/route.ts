@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { createOTP } from "@/lib/otp";
+import { sendSignupOTP } from "@/lib/email";
 
 export async function POST(req: Request) {
     try {
@@ -40,21 +42,30 @@ export async function POST(req: Request) {
             if (!existing) isUnique = true;
         }
 
-        // 5. Create User
+        // 5. Create UNVERIFIED User
         const user = await prisma.user.create({
             data: {
                 name,
-                email: normalizedEmail, // Store email in lowercase
+                email: normalizedEmail,
                 password: hashedPassword,
                 referralCode: newReferralCode,
                 uplineId: upline.id,
-                role: "USER"
+                role: "USER",
+                verified: false // Email not verified yet
             }
         });
 
-        console.log(`[TREE] Created User: ${user.email} (ID: ${user.id}) referred by ${upline.email} (ID: ${upline.id})`);
+        console.log(`[TREE] Created UNVERIFIED User: ${user.email} (ID: ${user.id}) referred by ${upline.email}`);
 
-        return NextResponse.json({ message: "User registered successfully", userId: user.id }, { status: 201 });
+        // 6. Generate and send OTP
+        const otp = await createOTP(user.id, 'SIGNUP');
+        await sendSignupOTP(normalizedEmail, name || normalizedEmail.split('@')[0], otp);
+
+        return NextResponse.json({
+            message: "Verification code sent to your email. Please check your inbox.",
+            userId: user.id,
+            requiresVerification: true
+        }, { status: 201 });
 
     } catch (error: any) {
         console.error("SIGNUP_CRITICAL_ERROR:", {
