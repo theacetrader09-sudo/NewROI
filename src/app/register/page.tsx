@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import OTPInput from "@/components/OTPInput";
 
 function RegisterForm() {
     const router = useRouter();
@@ -18,6 +19,13 @@ function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [sponsorName, setSponsorName] = useState("");
     const [checkingSponsor, setCheckingSponsor] = useState(false);
+
+    // OTP Verification State
+    const [showOTPModal, setShowOTPModal] = useState(false);
+    const [userId, setUserId] = useState("");
+    const [verifying, setVerifying] = useState(false);
+    const [otpError, setOtpError] = useState("");
+    const [resendCooldown, setResendCooldown] = useState(0);
 
     // Auto-fill referral code from URL
     useEffect(() => {
@@ -54,6 +62,14 @@ function RegisterForm() {
         return () => clearTimeout(debounce);
     }, [formData.referralCode]);
 
+    // Resend cooldown timer
+    useEffect(() => {
+        if (resendCooldown > 0) {
+            const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [resendCooldown]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
@@ -72,11 +88,62 @@ function RegisterForm() {
                 throw new Error(data.error || "Something went wrong");
             }
 
-            router.push("/login?registered=true");
+            // Show OTP modal instead of redirecting
+            setUserId(data.userId);
+            setShowOTPModal(true);
         } catch (err: any) {
             setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleOTPVerify = async (otp: string) => {
+        setOtpError("");
+        setVerifying(true);
+
+        try {
+            const res = await fetch("/api/auth/verify-email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId, otp }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Invalid OTP");
+            }
+
+            // Success! Redirect to login
+            router.push("/login?verified=true");
+        } catch (err: any) {
+            setOtpError(err.message);
+        } finally {
+            setVerifying(false);
+        }
+    };
+
+    const handleResendOTP = async () => {
+        if (resendCooldown > 0) return;
+
+        setOtpError("");
+        try {
+            const res = await fetch("/api/auth/resend-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setResendCooldown(60); // 60 second cooldown
+            } else {
+                setOtpError(data.error || "Failed to resend OTP");
+            }
+        } catch {
+            setOtpError("Failed to resend OTP");
         }
     };
 
@@ -261,6 +328,68 @@ function RegisterForm() {
                     </p>
                 </div>
             </div>
+
+            {/* OTP Verification Modal */}
+            {showOTPModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="w-full max-w-md bg-gradient-to-br from-[#1a1025] to-[#0f0818] rounded-2xl border border-white/10 shadow-2xl p-8">
+                        {/* Header */}
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+                                <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h2 className="text-2xl font-bold text-white mb-2">Verify Your Email</h2>
+                            <p className="text-white/60 text-sm">
+                                We've sent a 6-digit code to<br />
+                                <span className="text-white font-medium">{formData.email}</span>
+                            </p>
+                        </div>
+
+                        {/* OTP Input */}
+                        <div className="mb-6">
+                            <OTPInput
+                                onComplete={handleOTPVerify}
+                                loading={verifying}
+                            />
+                        </div>
+
+                        {/* Error Message */}
+                        {otpError && (
+                            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center">
+                                {otpError}
+                            </div>
+                        )}
+
+                        {/* Resend Button */}
+                        <div className="text-center">
+                            <p className="text-white/60 text-sm mb-2">Didn't receive the code?</p>
+                            <button
+                                onClick={handleResendOTP}
+                                disabled={resendCooldown > 0 || verifying}
+                                className="text-primary hover:text-primary-light font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {resendCooldown > 0
+                                    ? `Resend code in ${resendCooldown}s`
+                                    : 'Resend Code'
+                                }
+                            </button>
+                        </div>
+
+                        {/* Info */}
+                        <div className="mt-6 p-3 rounded-lg bg-white/5 border border-white/10">
+                            <p className="text-white/60 text-xs text-center">
+                                <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                                Code expires in 5 minutes. Check your spam folder if you don't see it.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
 
             {/* Keyframe animation for gradient */}
             <style jsx>{`
