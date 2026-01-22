@@ -25,63 +25,57 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Receiving wallet address is required" }, { status: 400 });
         }
 
+        const user = await prisma.user.findUnique({
+            where: { id: (session.user as any).id }
+        });
+
+        if (!user || Number(user.balance) < withdrawAmount) {
+            return NextResponse.json({ error: "Insufficient balance for this withdrawal" }, { status: 400 });
+        }
+
+        // ❌ PREVENT MULTIPLE PENDING WITHDRAWALS
+        const existingPending = await prisma.transaction.findFirst({
+            where: {
+                userId: user.id,
+                type: "WITHDRAWAL",
+                status: "PENDING"
+            }
+        });
+
+        if (existingPending) {
+            return NextResponse.json({
+                error: "You already have a pending withdrawal. Please wait for admin approval before requesting another withdrawal."
+            }, { status: 400 });
+        }
+
         // Calculate fees
         const platformFee = (withdrawAmount * PLATFORM_FEE_PERCENT) / 100;
         const networkFee = 0.29;
         const netPayoutAmount = withdrawAmount - platformFee - networkFee;
 
-        // Atomic Transaction for Balance Guard
-        const result = await prisma.$transaction(async (tx) => {
-            // 1. Get User with Row Locking (prevent race conditions)
-            const user = await tx.user.findUnique({
-                where: { id: (session.user as any).id },
-            });
-
-            if (!user || Number(user.balance) < withdrawAmount) {
-                throw new Error("Insufficient balance for this withdrawal");
+        // ✅ CREATE PENDING REQUEST WITHOUT DEDUCTING BALANCE
+        const withdrawalTx = await prisma.transaction.create({
+            data: {
+                userId: user.id,
+                type: "WITHDRAWAL",
+                amount: netPayoutAmount, // NET amount admin should pay
+                previousBalance: Number(user.balance),
+                newBalance: Number(user.balance), // Balance NOT changed yet
+                description: `Withdrawal request to ${walletAddress} (Original: $${withdrawAmount.toFixed(2)}, Fee: $${platformFee.toFixed(2)}, Network: $${networkFee.toFixed(2)})`,
+                status: "PENDING",
+                referenceId: walletAddress, // Store destination wallet
             }
-
-            // 2. Deduct full withdrawal amount from Balance
-            const updatedUser = await tx.user.update({
-                where: { id: user.id },
-                data: { balance: { decrement: withdrawAmount } }
-            });
-
-            // 3. Create Withdrawal Transaction Record (shows net payout to admin)
-            const withdrawalTx = await tx.transaction.create({
-                data: {
-                    userId: user.id,
-                    type: "WITHDRAWAL",
-                    amount: netPayoutAmount, // Store NET amount admin should pay
-                    previousBalance: Number(user.balance),
-                    newBalance: Number(updatedUser.balance),
-                    description: `Withdrawal request to ${walletAddress} (Original: $${withdrawAmount.toFixed(2)}, Fee: $${platformFee.toFixed(2)}, Network: $${networkFee.toFixed(2)})`,
-                    status: "PENDING",
-                    referenceId: walletAddress, // Store destination wallet
-                }
-            });
-
-            // 4. Create Platform Fee Transaction Record (for ledger/accounting)
-            await tx.transaction.create({
-                data: {
-                    userId: user.id,
-                    type: "FEE",
-                    amount: platformFee,
-                    previousBalance: Number(updatedUser.balance),
-                    newBalance: Number(updatedUser.balance), // Balance already deducted above
-                    description: `Platform fee (5%) for withdrawal request #${withdrawalTx.id}`,
-                    status: "COMPLETED",
-                }
-            });
-
-            return withdrawalTx;
         });
 
+        // ✅ STORE ORIGINAL AMOUNT IN DESCRIPTION FOR LATER DEDUCTION
+        // When admin approves, they'll deduct the FULL withdrawAmount (not net amount)
+
         return NextResponse.json({
-            message: `Withdrawal request submitted. You will receive $${netPayoutAmount.toFixed(2)} after fees.`,
-            transactionId: result.id,
+            message: `Withdrawal request submitted. Balance will be deducted after admin approval. You will receive $${netPayoutAmount.toFixed(2)} after fees.`,
+            transactionId: withdrawalTx.id,
             netPayout: netPayoutAmount,
-            platformFee: platformFee
+            platformFee: platformFee,
+            note: "Your balance will remain unchanged until admin approves this withdrawal."
         }, { status: 201 });
 
     } catch (error: any) {
