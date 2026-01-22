@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import OTPInput from "@/components/OTPInput";
 
 export default function WithdrawPage() {
     const router = useRouter();
@@ -10,6 +11,12 @@ export default function WithdrawPage() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
     const [balance, setBalance] = useState(0);
+
+    // OTP State
+    const [showOTPModal, setShowOTPModal] = useState(false);
+    const [verifying, setVerifying] = useState(false);
+    const [otpError, setOtpError] = useState("");
+    const [resendCooldown, setResendCooldown] = useState(0);
 
     const NETWORK_FEE = 0.29;
     const PLATFORM_FEE_PERCENT = 5; // 5% withdrawal fee
@@ -44,6 +51,14 @@ export default function WithdrawPage() {
         return Math.max(0, amt - platformFee - NETWORK_FEE);
     };
 
+    // Resend cooldown timer
+    useEffect(() => {
+        if (resendCooldown > 0) {
+            const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [resendCooldown]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -69,7 +84,8 @@ export default function WithdrawPage() {
         }
 
         try {
-            const res = await fetch("/api/withdraw", {
+            // Request OTP instead of direct submission
+            const res = await fetch("/api/withdraw/request", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ amount: numAmount, walletAddress: wallet }),
@@ -79,14 +95,68 @@ export default function WithdrawPage() {
 
             if (!res.ok) throw new Error(data.error || "Request failed");
 
-            setMessage({ type: "success", text: data.message || "Withdrawal request submitted successfully!" });
-            fetchProfile();
-            setAmount("");
-            setWallet("");
+            // Show OTP modal
+            setShowOTPModal(true);
+            setMessage({ type: "success", text: "OTP sent to your email. Please check your inbox." });
         } catch (err: any) {
             setMessage({ type: "error", text: err.message });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleOTPVerify = async (otp: string) => {
+        setOtpError("");
+        setVerifying(true);
+
+        try {
+            const res = await fetch("/api/withdraw/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    otp,
+                    amount: parseFloat(amount),
+                    walletAddress: wallet
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Invalid OTP");
+
+            // Success!
+            setShowOTPModal(false);
+            setMessage({ type: "success", text: data.message });
+            fetchProfile();
+            setAmount("");
+            setWallet("");
+        } catch (err: any) {
+            setOtpError(err.message);
+        } finally {
+            setVerifying(false);
+        }
+    };
+
+    const handleResendOTP = async () => {
+        if (resendCooldown > 0) return;
+
+        setOtpError("");
+        try {
+            const res = await fetch("/api/withdraw/request", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount: parseFloat(amount), walletAddress: wallet }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setResendCooldown(60); // 60 second cooldown
+            } else {
+                setOtpError(data.error || "Failed to resend OTP");
+            }
+        } catch {
+            setOtpError("Failed to resend OTP");
         }
     };
 
@@ -290,6 +360,66 @@ export default function WithdrawPage() {
                     )}
                 </button>
             </div>
+
+            {/* OTP Verification Modal */}
+            {showOTPModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="w-full max-w-md bg-gradient-to-br from-[#1a1025] to-[#0f0818] rounded-2xl border border-white/10 shadow-2xl p-8">
+                        {/* Header */}
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-600/20 flex items-center justify-center">
+                                <svg className="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <h2 className="text-2xl font-bold text-white mb-2">Verify Withdrawal</h2>
+                            <p className="text-white/60 text-sm">
+                                Enter the 6-digit code sent to your email
+                            </p>
+                        </div>
+
+                        {/* OTP Input */}
+                        <div className="mb-6">
+                            <OTPInput
+                                onComplete={handleOTPVerify}
+                                loading={verifying}
+                            />
+                        </div>
+
+                        {/* Error Message */}
+                        {otpError && (
+                            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center">
+                                {otpError}
+                            </div>
+                        )}
+
+                        {/* Resend Button */}
+                        <div className="text-center">
+                            <p className="text-white/60 text-sm mb-2">Didn't receive the code?</p>
+                            <button
+                                onClick={handleResendOTP}
+                                disabled={resendCooldown > 0 || verifying}
+                                className="text-purple-500 hover:text-purple-400 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {resendCooldown > 0
+                                    ? `Resend in ${resendCooldown}s`
+                                    : 'Resend Code'
+                                }
+                            </button>
+                        </div>
+
+                        {/* Info */}
+                        <div className="mt-6 p-3 rounded-lg bg-white/5 border border-white/10">
+                            <p className="text-white/60 text-xs text-center">
+                                <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                                Code expires in 5 minutes. Check spam folder if not received.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
