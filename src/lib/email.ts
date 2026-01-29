@@ -2,7 +2,12 @@ import { Resend } from 'resend';
 import { withdrawalOTPTemplate, signupOTPTemplate } from './email-templates';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+
+if (!process.env.FROM_EMAIL) {
+    throw new Error('FROM_EMAIL environment variable is not set. Please configure it in Vercel.');
+}
+
+const FROM_EMAIL = process.env.FROM_EMAIL;
 
 /**
  * Send withdrawal OTP verification email
