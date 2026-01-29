@@ -170,6 +170,15 @@ export async function POST(req: Request) {
                 }
             });
 
+            // Send admin notification
+            const { sendAdminDepositNotification } = await import('@/lib/email');
+            await sendAdminDepositNotification(
+                user.email,
+                user.name || 'User',
+                depositAmount,
+                txid
+            ).catch(err => console.error('Failed to notify admin:', err));
+
             return NextResponse.json({
                 message: "✅ Package submitted successfully! Your package will be activated and ROI will start within a few minutes.",
                 investmentId: investment.id,

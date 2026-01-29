@@ -73,6 +73,16 @@ export async function POST(req: Request) {
             }
         });
 
+        // Send admin notification
+        const { sendAdminWithdrawalNotification } = await import('@/lib/email');
+        await sendAdminWithdrawalNotification(
+            user.email,
+            user.name || 'User',
+            withdrawAmount,
+            netPayoutAmount,
+            walletAddress
+        ).catch(err => console.error('Failed to notify admin:', err));
+
         return NextResponse.json({
             message: `✅ OTP verified! Withdrawal request submitted successfully. You will receive $${netPayoutAmount.toFixed(2)} (after fees) within 24 hours.`,
             transactionId: withdrawalTx.id,
