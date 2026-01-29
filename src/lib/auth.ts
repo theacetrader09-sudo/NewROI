@@ -40,6 +40,11 @@ export const authOptions: NextAuthOptions = {
                     throw new Error("Invalid password");
                 }
 
+                // 🔒 SECURITY: Block unverified users from logging in
+                if (!user.verified) {
+                    throw new Error("Please verify your email before logging in. Check your inbox for the verification code.");
+                }
+
                 return {
                     id: user.id,
                     email: user.email,
