@@ -19,7 +19,7 @@ const faqs: FAQ[] = [
     },
     {
         question: "How do I withdraw my earnings?",
-        answer: "Go to the Withdraw page, enter the amount and your BEP20 wallet address. Withdrawals are processed within 24 hours after admin approval."
+        answer: "Go to the Withdraw page, enter the amount and your BEP20 wallet address. Withdrawals are typically processed within 24 hours."
     },
     {
         question: "How does the referral program work?",

@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
         if (existingPending) {
             return NextResponse.json({
-                error: "You already have a pending withdrawal. Please wait for admin approval before requesting another withdrawal."
+                error: "You already have a withdrawal request being processed. Please wait until it completes before submitting another request."
             }, { status: 400 });
         }
 
@@ -71,11 +71,11 @@ export async function POST(req: Request) {
         // When admin approves, they'll deduct the FULL withdrawAmount (not net amount)
 
         return NextResponse.json({
-            message: `Withdrawal request submitted. Balance will be deducted after admin approval. You will receive $${netPayoutAmount.toFixed(2)} after fees.`,
+            message: `✅ Withdrawal request submitted successfully! You will receive $${netPayoutAmount.toFixed(2)} (after fees) within 24 hours to your wallet.`,
             transactionId: withdrawalTx.id,
             netPayout: netPayoutAmount,
             platformFee: platformFee,
-            note: "Your balance will remain unchanged until admin approves this withdrawal."
+            note: "Your withdrawal is being processed and will be completed shortly."
         }, { status: 201 });
 
     } catch (error: any) {

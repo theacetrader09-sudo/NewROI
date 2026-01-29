@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
         if (existingPending) {
             return NextResponse.json({
-                error: "You already have a pending withdrawal. Please wait for admin approval."
+                error: "You already have a withdrawal request being processed. Please wait until it completes."
             }, { status: 400 });
         }
 
@@ -74,11 +74,11 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({
-            message: `OTP verified! Withdrawal request submitted. You will receive $${netPayoutAmount.toFixed(2)} after admin approval and fees.`,
+            message: `✅ OTP verified! Withdrawal request submitted successfully. You will receive $${netPayoutAmount.toFixed(2)} (after fees) within 24 hours.`,
             transactionId: withdrawalTx.id,
             netPayout: netPayoutAmount,
             platformFee: platformFee,
-            note: "Your balance will be deducted only after admin approves this withdrawal."
+            note: "Your withdrawal is being processed and will be completed shortly."
         }, { status: 201 });
 
     } catch (error: any) {

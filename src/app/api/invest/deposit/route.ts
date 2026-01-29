@@ -151,7 +151,7 @@ export async function POST(req: Request) {
             });
 
             return NextResponse.json({
-                message: "⏳ Deposit submitted for manual review. Will be added to wallet after approval.",
+                message: "✅ Deposit submitted successfully! Processing your deposit - funds will be added to your wallet within a few minutes.",
                 verified: false,
                 amount: depositAmount,
                 mode: "wallet"
@@ -171,7 +171,7 @@ export async function POST(req: Request) {
             });
 
             return NextResponse.json({
-                message: "⏳ Package submitted. ROI will start after admin approval.",
+                message: "✅ Package submitted successfully! Your package will be activated and ROI will start within a few minutes.",
                 investmentId: investment.id,
                 verified: false,
                 mode: "package"
