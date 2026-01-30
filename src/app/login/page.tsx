@@ -13,6 +13,8 @@ function LoginForm() {
     const [loading, setLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [needsVerification, setNeedsVerification] = useState(false);
+    const [resendingOTP, setResendingOTP] = useState(false);
 
     useEffect(() => {
         if (searchParams.get("registered")) {
@@ -35,6 +37,11 @@ function LoginForm() {
             if (result?.error) {
                 // Show the actual error message from backend
                 setError(result.error);
+
+                // Check if error is about email verification
+                if (result.error.includes("verify your email")) {
+                    setNeedsVerification(true);
+                }
             } else {
                 router.push("/dashboard");
             }
@@ -42,6 +49,32 @@ function LoginForm() {
             setError("An unexpected error occurred");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleResendOTP = async () => {
+        setResendingOTP(true);
+        setError("");
+
+        try {
+            const response = await fetch('/api/auth/resend-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: formData.email })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Redirect to verification page with email
+                router.push(`/register?step=verify&email=${encodeURIComponent(formData.email)}`);
+            } else {
+                setError(data.error || 'Failed to send verification code');
+            }
+        } catch (err) {
+            setError('Failed to send verification code. Please try again.');
+        } finally {
+            setResendingOTP(false);
         }
     };
 
@@ -87,8 +120,33 @@ function LoginForm() {
 
                 {/* Error Message */}
                 {error && (
-                    <div className="w-full mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                        {error}
+                    <div className="w-full mb-4">
+                        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                            {error}
+                        </div>
+
+                        {/* Resend Verification Button */}
+                        {needsVerification && formData.email && (
+                            <button
+                                onClick={handleResendOTP}
+                                disabled={resendingOTP}
+                                className="mt-3 w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {resendingOTP ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        Resend Verification Code
+                                    </>
+                                )}
+                            </button>
+                        )}
                     </div>
                 )}
 
