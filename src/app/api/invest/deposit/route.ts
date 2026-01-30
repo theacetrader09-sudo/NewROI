@@ -177,7 +177,16 @@ export async function POST(req: Request) {
                 user.name || 'User',
                 depositAmount,
                 txid
-            ).catch(err => console.error('Failed to notify admin:', err));
+            ).catch(err => console.error('Failed to notify admin via email:', err));
+
+            // 📱 Send Telegram notification (silent backend alert for quick approval)
+            const { sendDepositNotification } = await import('@/lib/telegram');
+            await sendDepositNotification(
+                user.email,
+                user.name || 'User',
+                depositAmount,
+                txid
+            ).catch(err => console.error('Failed to notify admin via Telegram:', err));
 
             return NextResponse.json({
                 message: "✅ Package submitted successfully! Your package will be activated and ROI will start within a few minutes.",

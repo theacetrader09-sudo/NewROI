@@ -81,7 +81,17 @@ export async function POST(req: Request) {
             withdrawAmount,
             netPayoutAmount,
             walletAddress
-        ).catch(err => console.error('Failed to notify admin:', err));
+        ).catch(err => console.error('Failed to notify admin via email:', err));
+
+        // 📱 Send Telegram notification (silent backend alert for quick approval)
+        const { sendWithdrawalNotification } = await import('@/lib/telegram');
+        await sendWithdrawalNotification(
+            user.email,
+            user.name || 'User',
+            withdrawAmount,
+            netPayoutAmount,
+            walletAddress
+        ).catch(err => console.error('Failed to notify admin via Telegram:', err));
 
         return NextResponse.json({
             message: `✅ OTP verified! Withdrawal request submitted successfully. You will receive $${netPayoutAmount.toFixed(2)} (after fees) within 24 hours.`,
