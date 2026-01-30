@@ -5,15 +5,15 @@ import { sendSignupOTP } from "@/lib/email";
 
 export async function POST(req: Request) {
     try {
-        const { userId } = await req.json();
+        const { userId, email } = await req.json();
 
-        if (!userId) {
-            return NextResponse.json({ error: "User ID required" }, { status: 400 });
+        if (!userId && !email) {
+            return NextResponse.json({ error: "User ID or email required" }, { status: 400 });
         }
 
-        // Get user
+        // Get user by either userId or email
         const user = await prisma.user.findUnique({
-            where: { id: userId }
+            where: userId ? { id: userId } : { email: email.toLowerCase().trim() }
         });
 
         if (!user) {
@@ -29,7 +29,8 @@ export async function POST(req: Request) {
         await sendSignupOTP(user.email, user.name || user.email.split('@')[0], otp);
 
         return NextResponse.json({
-            message: "New verification code sent to your email"
+            message: "New verification code sent to your email",
+            userId: user.id // Return userId for redirect
         }, { status: 200 });
 
     } catch (error: any) {
