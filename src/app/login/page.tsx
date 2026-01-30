@@ -66,8 +66,8 @@ function LoginForm() {
             const data = await response.json();
 
             if (response.ok) {
-                // Redirect to verification page with email
-                router.push(`/register?step=verify&email=${encodeURIComponent(formData.email)}`);
+                // Redirect to verification page with userId
+                router.push(`/register?step=verify&userId=${data.userId}&email=${encodeURIComponent(formData.email)}`);
             } else {
                 setError(data.error || 'Failed to send verification code');
             }
