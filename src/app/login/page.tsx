@@ -15,6 +15,10 @@ function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [needsVerification, setNeedsVerification] = useState(false);
     const [resendingOTP, setResendingOTP] = useState(false);
+    const [showOTPModal, setShowOTPModal] = useState(false);
+    const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    const [verifyingOTP, setVerifyingOTP] = useState(false);
+    const [userId, setUserId] = useState("");
 
     useEffect(() => {
         if (searchParams.get("registered")) {
@@ -66,8 +70,11 @@ function LoginForm() {
             const data = await response.json();
 
             if (response.ok) {
-                // Redirect to verification page with userId
-                router.push(`/register?step=verify&userId=${data.userId}&email=${encodeURIComponent(formData.email)}`);
+                // Show OTP modal instead of redirecting
+                setUserId(data.userId);
+                setShowOTPModal(true);
+                setNeedsVerification(false);
+                setError("");
             } else {
                 setError(data.error || 'Failed to send verification code');
             }
@@ -75,6 +82,71 @@ function LoginForm() {
             setError('Failed to send verification code. Please try again.');
         } finally {
             setResendingOTP(false);
+        }
+    };
+
+    const handleOTPChange = (index: number, value: string) => {
+        if (value.length > 1) value = value[0];
+        if (!/^[0-9]*$/.test(value)) return;
+
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+
+        // Auto-focus next input
+        if (value && index < 5) {
+            const nextInput = document.getElementById(`otp-${index + 1}`);
+            nextInput?.focus();
+        }
+
+        // Auto-submit when all 6 digits entered
+        if (index === 5 && value && newOtp.every(digit => digit)) {
+            handleVerifyOTP(newOtp.join(''));
+        }
+    };
+
+    const handleVerifyOTP = async (otpCode?: string) => {
+        const code = otpCode || otp.join('');
+        if (code.length !== 6) {
+            setError('Please enter all 6 digits');
+            return;
+        }
+
+        setVerifyingOTP(true);
+        setError("");
+
+        try {
+            const response = await fetch('/api/auth/verify-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, otp: code })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Verification successful! Now auto-login
+                setShowOTPModal(false);
+                const result = await signIn("credentials", {
+                    redirect: false,
+                    email: formData.email,
+                    password: formData.password,
+                });
+
+                if (result?.error) {
+                    setError(result.error);
+                } else {
+                    router.push("/dashboard");
+                }
+            } else {
+                setError(data.error || 'Invalid verification code');
+                setOtp(["", "", "", "", "", ""]); // Reset OTP
+                document.getElementById('otp-0')?.focus();
+            }
+        } catch (err) {
+            setError('Verification failed. Please try again.');
+        } finally {
+            setVerifyingOTP(false);
         }
     };
 
@@ -243,6 +315,98 @@ function LoginForm() {
                     </p>
                 </div>
             </div>
+
+            {/* OTP Verification Modal - Only for Existing Unverified Users */}
+            {showOTPModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md bg-background-dark border border-white/20 rounded-2xl p-8 shadow-2xl">
+                        {/* Close Button */}
+                        <button
+                            onClick={() => {
+                                setShowOTPModal(false);
+                                setOtp(["", "", "", "", "", ""]);
+                                setError("");
+                            }}
+                            className="absolute top-4 right-4 text-white/50 hover:text-white/80 transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {/* Modal Content */}
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-2">Verify Your Email</h3>
+                            <p className="text-white/70 text-sm">
+                                We sent a 6-digit code to<br />
+                                <span className="text-primary font-medium">{formData.email}</span>
+                            </p>
+                        </div>
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center">
+                                {error}
+                            </div>
+                        )}
+
+                        {/* OTP Input */}
+                        <div className="flex gap-2 justify-center mb-6">
+                            {otp.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    id={`otp-${index}`}
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handleOTPChange(index, e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Backspace' && !digit && index > 0) {
+                                            document.getElementById(`otp-${index - 1}`)?.focus();
+                                        }
+                                    }}
+                                    className="w-12 h-14 text-center text-2xl font-bold text-white bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                    disabled={verifyingOTP}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Verify Button */}
+                        <button
+                            onClick={() => handleVerifyOTP()}
+                            disabled={verifyingOTP || otp.some(d => !d)}
+                            className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {verifyingOTP ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Verifying...
+                                </>
+                            ) : (
+                                'Verify & Login'
+                            )}
+                        </button>
+
+                        {/* Resend Link */}
+                        <p className="text-center text-white/60 text-sm mt-4">
+                            Didn't receive the code?{" "}
+                            <button
+                                onClick={handleResendOTP}
+                                disabled={resendingOTP}
+                                className="text-primary hover:text-primary-light font-medium transition-colors disabled:opacity-50"
+                            >
+                                {resendingOTP ? 'Sending...' : 'Resend'}
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Keyframe animation for gradient */}
             <style jsx>{`
