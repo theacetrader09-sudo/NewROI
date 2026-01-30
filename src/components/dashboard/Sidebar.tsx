@@ -80,7 +80,7 @@ export default function Sidebar() {
                             NovaQuant
                         </h2>
                         <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
-                            Investment Platform
+                            Your AI Finance
                         </p>
                     </div>
                 </div>
