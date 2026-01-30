@@ -77,10 +77,10 @@ export default function Sidebar() {
                             color: '#fff',
                             letterSpacing: '-0.5px'
                         }}>
-                            MLM ROI
+                            NovaQuant
                         </h2>
                         <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
-                            Premium System
+                            Investment Platform
                         </p>
                     </div>
                 </div>

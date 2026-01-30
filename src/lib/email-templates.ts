@@ -73,7 +73,7 @@ export const withdrawalOTPTemplate = (otp: string, amount: number, userName: str
     </div>
     
     <div class="footer">
-      <p>© ${new Date().getFullYear()} MLM ROI System. All rights reserved.</p>
+      <p>© ${new Date().getFullYear()} NovaQuant. All rights reserved.</p>
       <p style="margin-top: 10px;">Secure transactions powered by advanced verification</p>
     </div>
   </div>
@@ -123,7 +123,7 @@ export const signupOTPTemplate = (otp: string, userName: string) => `
   <div class="container">
     <div class="header">
       <div class="header-icon">🎉</div>
-      <h1>Welcome to MLM ROI!</h1>
+      <h1>Welcome to NovaQuant!</h1>
       <p>You're just one step away</p>
     </div>
     
@@ -131,7 +131,7 @@ export const signupOTPTemplate = (otp: string, userName: string) => `
       <div class="greeting">Hello ${userName}!</div>
       
       <div class="message">
-        Thank you for joining MLM ROI System! We're excited to have you on board. To complete your registration and start earning, please verify your email address with the code below:
+        Thank you for joining NovaQuant! We're excited to have you on board. To complete your registration and start earning, please verify your email address with the code below:
       </div>
       
       <div class="otp-box">
@@ -159,7 +159,7 @@ export const signupOTPTemplate = (otp: string, userName: string) => `
     
     <div class="footer">
       <p><strong>Need help?</strong> Contact our support team</p>
-      <p style="margin-top: 15px;">© ${new Date().getFullYear()} MLM ROI System. All rights reserved.</p>
+      <p style="margin-top: 15px;">© ${new Date().getFullYear()} NovaQuant. All rights reserved.</p>
     </div>
   </div>
 </body>

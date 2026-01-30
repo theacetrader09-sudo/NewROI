@@ -6,7 +6,7 @@ export default function LandingPage() {
       <div className="text-center max-w-4xl mx-auto">
         {/* Logo/Brand */}
         <h1 className="text-6xl md:text-8xl font-extrabold text-white mb-6">
-          MLM ROI System
+          NovaQuant
         </h1>
 
         {/* Tagline */}

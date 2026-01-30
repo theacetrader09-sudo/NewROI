@@ -6,8 +6,8 @@ import { Providers } from "@/components/Providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Premium MLM ROI System",
-  description: "Secure 1% Daily ROI Platform with 10-Level Referral Network",
+  title: "NovaQuant",
+  description: "Professional investment platform with automated returns",
 };
 
 export default function RootLayout({

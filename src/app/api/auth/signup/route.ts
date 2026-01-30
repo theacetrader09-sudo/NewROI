@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         let newReferralCode = "";
         let isUnique = false;
         while (!isUnique) {
-            newReferralCode = "MLM" + Math.random().toString(36).substring(2, 9).toUpperCase();
+            newReferralCode = "NQ" + Math.random().toString(36).substring(2, 9).toUpperCase();
             const existing = await prisma.user.findUnique({ where: { referralCode: newReferralCode } });
             if (!existing) isUnique = true;
         }

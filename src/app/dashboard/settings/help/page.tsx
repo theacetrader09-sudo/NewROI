@@ -31,7 +31,7 @@ const faqs: FAQ[] = [
     },
     {
         question: "How do I contact support?",
-        answer: "You can reach our support team via Telegram @MLMSupport or email support@mlmroi.com. We typically respond within 24 hours."
+        answer: "You can reach our support team via Telegram @NovaQuantSupport or email support@airev.ventures. We typically respond within 24 hours."
     },
     {
         question: "Can I have multiple accounts?",
@@ -130,7 +130,7 @@ export default function HelpPage() {
 
                     <div className="space-y-3">
                         <a
-                            href="https://t.me/MLMSupport"
+                            href="https://t.me/NovaQuantSupport"
                             target="_blank"
                             className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 transition-colors"
                         >
@@ -141,7 +141,7 @@ export default function HelpPage() {
                             </div>
                             <div>
                                 <p className="text-white font-medium text-sm">Telegram Support</p>
-                                <p className="text-blue-400 text-xs">@MLMSupport</p>
+                                <p className="text-blue-400 text-xs">@NovaQuantSupport</p>
                             </div>
                         </a>
 
