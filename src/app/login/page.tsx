@@ -33,7 +33,8 @@ function LoginForm() {
             });
 
             if (result?.error) {
-                setError("Invalid email or password");
+                // Show the actual error message from backend
+                setError(result.error);
             } else {
                 router.push("/dashboard");
             }
