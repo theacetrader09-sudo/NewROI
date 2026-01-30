@@ -19,6 +19,7 @@ function LoginForm() {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [verifyingOTP, setVerifyingOTP] = useState(false);
     const [userId, setUserId] = useState("");
+    const [verificationSuccess, setVerificationSuccess] = useState(false);
 
     useEffect(() => {
         if (searchParams.get("registered")) {
@@ -125,19 +126,25 @@ function LoginForm() {
             const data = await response.json();
 
             if (response.ok) {
-                // Verification successful! Now auto-login
-                setShowOTPModal(false);
-                const result = await signIn("credentials", {
-                    redirect: false,
-                    email: formData.email,
-                    password: formData.password,
-                });
+                // Show success message first
+                setVerificationSuccess(true);
+                setVerifyingOTP(false);
 
-                if (result?.error) {
-                    setError(result.error);
-                } else {
-                    router.push("/dashboard");
-                }
+                // Wait 2 seconds to show success, then auto-login
+                setTimeout(async () => {
+                    setShowOTPModal(false);
+                    const result = await signIn("credentials", {
+                        redirect: false,
+                        email: formData.email,
+                        password: formData.password,
+                    });
+
+                    if (result?.error) {
+                        setError(result.error);
+                    } else {
+                        router.push("/dashboard");
+                    }
+                }, 2000);
             } else {
                 setError(data.error || 'Invalid verification code');
                 setOtp(["", "", "", "", "", ""]); // Reset OTP
@@ -380,10 +387,17 @@ function LoginForm() {
                         {/* Verify Button */}
                         <button
                             onClick={() => handleVerifyOTP()}
-                            disabled={verifyingOTP || otp.some(d => !d)}
+                            disabled={verifyingOTP || verificationSuccess || otp.some(d => !d)}
                             className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            {verifyingOTP ? (
+                            {verificationSuccess ? (
+                                <>
+                                    <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    ✅ Email Verified! Logging in...
+                                </>
+                            ) : verifyingOTP ? (
                                 <>
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     Verifying...
