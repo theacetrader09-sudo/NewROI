@@ -13,7 +13,9 @@ export async function GET(req: Request) {
 
         const { searchParams } = new URL(req.url);
         const type = searchParams.get("type"); // Optional filter: DEPOSIT, ROI, COMMISSION, WITHDRAWAL
-        const limit = parseInt(searchParams.get("limit") || "100");
+        const page = parseInt(searchParams.get("page") || "1");
+        const limit = parseInt(searchParams.get("limit") || "20");
+        const offset = (page - 1) * limit;
 
         // Date filtering parameters
         const dateFilter = searchParams.get("dateFilter"); // today, yesterday, 7days, month
@@ -64,18 +66,68 @@ export async function GET(req: Request) {
             dateCondition = { createdAt: { lte: end } };
         }
 
-        const transactions = await prisma.transaction.findMany({
-            where: {
-                userId: (session.user as any).id,
-                ...(type && { type: type as any }),
-                type: { not: "FEE" }, // Hide FEE transactions from user view
-                ...dateCondition
-            },
-            orderBy: { createdAt: "desc" },
-            take: limit,
+        // Build where clause
+        const whereClause = {
+            userId: (session.user as any).id,
+            ...(type && { type: type as any }),
+            type: { not: "FEE" }, // Hide FEE transactions from user view
+            ...dateCondition
+        };
+
+        // Get total count for pagination
+        const totalCount = await prisma.transaction.count({
+            where: whereClause
         });
 
-        return NextResponse.json({ transactions });
+        const transactions = await prisma.transaction.findMany({
+            where: whereClause,
+            orderBy: { createdAt: "desc" },
+            take: limit,
+            skip: offset,
+        });
+
+        // Map transactions to include displayAmount for proper withdrawal display
+        // For withdrawals, we show the amount user requested, not the fee-deducted amount
+        const mappedTransactions = transactions.map(tx => {
+            if (tx.type === 'WITHDRAWAL') {
+                // Reverse engineer the original requested amount
+                // Formula: net = requested - (requested * 0.05) - 0.29
+                // Simplify: net = requested * 0.95 - 0.29
+                // Solve: requested = (net + 0.29) / 0.95
+                const netAmount = Number(tx.amount);
+                const originalAmount = (netAmount + 0.29) / 0.95;
+                
+                return {
+                    ...tx,
+                    amount: tx.amount,
+                    displayAmount: originalAmount, // What user requested
+                    netAmount: netAmount // What they'll receive (for reference)
+                };
+            }
+            
+            // For all other transaction types, displayAmount = amount
+            return {
+                ...tx,
+                amount: tx.amount,
+                displayAmount: Number(tx.amount),
+                netAmount: Number(tx.amount)
+            };
+        });
+
+        const totalPages = Math.ceil(totalCount / limit);
+        const hasMore = page * limit < totalCount;
+
+        return NextResponse.json({
+            transactions: mappedTransactions,
+            pagination: {
+                page,
+                limit,
+                totalCount,
+                totalPages,
+                hasMore,
+                hasPrevious: page > 1
+            }
+        });
 
     } catch (error) {
         console.error("TRANSACTIONS_API_ERROR:", error);

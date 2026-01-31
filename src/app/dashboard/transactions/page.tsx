@@ -7,9 +7,20 @@ interface Transaction {
     id: string;
     type: string;
     amount: number;
+    displayAmount?: number;
+    netAmount?: number;
     status: string;
     description: string;
     createdAt: string;
+}
+
+interface PaginationData {
+    page: number;
+    limit: number;
+    totalCount: number;
+    totalPages: number;
+    hasMore: boolean;
+    hasPrevious: boolean;
 }
 
 type DateRange = 'ALL' | 'TODAY' | 'YESTERDAY' | 'WEEK' | 'CUSTOM';
@@ -24,25 +35,43 @@ export default function TransactionsPage() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [customStartDate, setCustomStartDate] = useState('');
     const [customEndDate, setCustomEndDate] = useState('');
+    const [pagination, setPagination] = useState<PaginationData>({
+        page: 1,
+        limit: 20,
+        totalCount: 0,
+        totalPages: 1,
+        hasMore: false,
+        hasPrevious: false
+    });
 
     useEffect(() => {
-        fetchTransactions();
+        fetchTransactions(1); // Reset to page 1 when filter changes
     }, [filter]);
 
     useEffect(() => {
         filterByDate();
     }, [transactions, dateRange, customStartDate, customEndDate]);
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = async (page = 1) => {
         setLoading(true);
         try {
-            let url = "/api/user/transactions";
+            let url = `/api/user/transactions?page=${page}&limit=20`;
             if (filter !== "ALL") {
-                url += `?type=${filter}`;
+                url += `&type=${filter}`;
             }
             const res = await fetch(url);
             const data = await res.json();
-            if (res.ok) setTransactions(data.transactions || []);
+            if (res.ok) {
+                setTransactions(data.transactions || []);
+                setPagination(data.pagination || {
+                    page: 1,
+                    limit: 20,
+                    totalCount: 0,
+                    totalPages: 1,
+                    hasMore: false,
+                    hasPrevious: false
+                });
+            }
         } catch (err) {
             console.error("Failed to fetch transactions:", err);
         } finally {
@@ -200,8 +229,8 @@ export default function TransactionsPage() {
                         key={f}
                         onClick={() => setFilter(f)}
                         className={`px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${filter === f
-                                ? 'text-white'
-                                : 'text-gray-300'
+                            ? 'text-white'
+                            : 'text-gray-300'
                             }`}
                         style={{
                             background: filter === f
@@ -239,8 +268,8 @@ export default function TransactionsPage() {
                                 }
                             }}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${dateRange === d.value
-                                    ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
-                                    : 'bg-white/5 text-gray-400 border border-white/10'
+                                ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
+                                : 'bg-white/5 text-gray-400 border border-white/10'
                                 }`}
                         >
                             {d.label}
@@ -364,7 +393,7 @@ export default function TransactionsPage() {
                                     </div>
                                     <div className="text-right">
                                         <p className={`font-bold text-lg ${income ? 'text-green-400' : 'text-red-400'}`}>
-                                            {income ? '+' : '-'}${Math.abs(Number(tx.amount)).toFixed(2)}
+                                            {income ? '+' : '-'}${Math.abs(Number(tx.displayAmount || tx.amount)).toFixed(2)}
                                         </p>
                                         <span
                                             className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
@@ -394,6 +423,52 @@ export default function TransactionsPage() {
                     })
                 )}
             </main>
+
+            {/* Pagination Controls */}
+            {!loading && filteredTransactions.length > 0 && (
+                <div
+                    className="px-6 py-4 flex items-center justify-between backdrop-blur-md"
+                    style={{
+                        background: 'rgba(46, 30, 75, 0.6)',
+                        borderTop: '1px solid rgba(139, 92, 246, 0.2)'
+                    }}
+                >
+                    <button
+                        onClick={() => fetchTransactions(pagination.page - 1)}
+                        disabled={!pagination.hasPrevious || loading}
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        style={{
+                            background: pagination.hasPrevious ? '#8b5cf6' : 'rgba(139, 92, 246, 0.2)',
+                            color: pagination.hasPrevious ? 'white' : '#9ca3af',
+                            border: '1px solid rgba(139, 92, 246, 0.3)'
+                        }}
+                    >
+                        ← Previous
+                    </button>
+
+                    <div className="flex flex-col items-center gap-1">
+                        <span className="text-sm font-medium text-white">
+                            Page {pagination.page} of {pagination.totalPages}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                            {pagination.totalCount} total transactions
+                        </span>
+                    </div>
+
+                    <button
+                        onClick={() => fetchTransactions(pagination.page + 1)}
+                        disabled={!pagination.hasMore || loading}
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        style={{
+                            background: pagination.hasMore ? '#8b5cf6' : 'rgba(139, 92, 246, 0.2)',
+                            color: pagination.hasMore ? 'white' : '#9ca3af',
+                            border: '1px solid rgba(139, 92, 246, 0.3)'
+                        }}
+                    >
+                        Next →
+                    </button>
+                </div>
+            )}
 
             {/* Material Icons Font */}
             <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />

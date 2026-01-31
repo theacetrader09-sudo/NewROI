@@ -22,6 +22,7 @@ export async function GET() {
                 balance: true,
                 referralCode: true,
                 role: true,
+                createdAt: true,
             }
         });
 
