@@ -62,7 +62,7 @@ model Investment {
 model Transaction {
   id          String   @id @default(cuid())
   userId      String
-  type        String   // DEPOSIT, WITHDRAWAL, ROI, COMMISSION
+  type        String   // DEPOSIT, WITHDRAWAL, ROI, COMMISSION, MISSED_ROI
   amount      Decimal  @db.Decimal(18, 2)  // Changed from Float
   
   previousBalance Decimal  @db.Decimal(18, 2)  // Changed from Float

@@ -151,7 +151,12 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                     if (!currentUplineId) break;
 
                     const upline = await tx.user.findUnique({
-                        where: { id: currentUplineId }
+                        where: { id: currentUplineId },
+                        include: {
+                            investments: {
+                                where: { status: "ACTIVE" }
+                            }
+                        }
                     });
 
                     if (!upline) break;
@@ -159,28 +164,49 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                     const commissionRate = levelCommissions[level - 1];
                     const commissionAmount = roiAmount * commissionRate;
 
-                    // Credit upline with commission
-                    const uplinePrevBal = Number(upline.balance);
-                    const uplineNewBal = uplinePrevBal + commissionAmount;
+                    // Check if upline has ACTIVE package
+                    const hasActivePackage = upline.investments.length > 0;
 
-                    await tx.user.update({
-                        where: { id: upline.id },
-                        data: { balance: uplineNewBal }
-                    });
+                    if (hasActivePackage) {
+                        // Credit upline with commission
+                        const uplinePrevBal = Number(upline.balance);
+                        const uplineNewBal = uplinePrevBal + commissionAmount;
 
-                    // Log commission transaction
-                    await tx.transaction.create({
-                        data: {
-                            userId: upline.id,
-                            type: "COMMISSION",
-                            amount: commissionAmount,
-                            previousBalance: uplinePrevBal,
-                            newBalance: uplineNewBal,
-                            description: `Level ${level} commission from ${investment.user.email}'s ROI ($${roiAmount.toFixed(2)})`,
-                            status: "COMPLETED",
-                            referenceId: investment.id
-                        }
-                    });
+                        await tx.user.update({
+                            where: { id: upline.id },
+                            data: { balance: uplineNewBal }
+                        });
+
+                        // Log commission transaction
+                        await tx.transaction.create({
+                            data: {
+                                userId: upline.id,
+                                type: "COMMISSION",
+                                amount: commissionAmount,
+                                previousBalance: uplinePrevBal,
+                                newBalance: uplineNewBal,
+                                description: `Level ${level} commission from ${investment.user.email}'s ROI ($${roiAmount.toFixed(2)})`,
+                                status: "COMPLETED",
+                                referenceId: investment.id
+                            }
+                        });
+                    } else {
+                        // User has NO active package - create MISSED_ROI record
+                        const uplineBalance = Number(upline.balance);
+
+                        await tx.transaction.create({
+                            data: {
+                                userId: upline.id,
+                                type: "MISSED_ROI",
+                                amount: commissionAmount,
+                                previousBalance: uplineBalance,
+                                newBalance: uplineBalance, // Balance doesn't change
+                                description: `🔒 Missed Level ${level} commission from ${investment.user.email}'s ROI ($${roiAmount.toFixed(2)}) - Activate your package to start earning!`,
+                                status: "MISSED",
+                                referenceId: investment.id
+                            }
+                        });
+                    }
 
                     // Move to next level
                     currentUplineId = upline.uplineId;
