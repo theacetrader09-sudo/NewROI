@@ -200,11 +200,23 @@ export async function POST(req: Request) {
                 txid
             ).catch(err => console.error('Failed to notify admin via Telegram:', err));
 
+            // Check if this is the user's first package (check for any previous investments)
+            const previousInvestments = await prisma.investment.count({
+                where: {
+                    userId: user.id,
+                    status: { in: ["COMPLETED", "ACTIVE", "PENDING"] },
+                    id: { not: investment.id } // Exclude the current investment
+                }
+            });
+
+            const isFirstPackage = previousInvestments === 0;
+
             return NextResponse.json({
                 message: "✅ Package submitted successfully! Your package will be activated and ROI will start within a few minutes.",
                 investmentId: investment.id,
                 verified: false,
-                mode: "package"
+                mode: "package",
+                isFirstPackage
             }, { status: 201 });
         }
 
