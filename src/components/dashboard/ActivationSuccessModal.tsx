@@ -6,13 +6,17 @@ interface ActivationSuccessModalProps {
     isOpen: boolean;
     onClose: () => void;
     totalMissed: number;
+    isFirstPackage?: boolean; // New prop to determine if this is first package
 }
 
-export default function ActivationSuccessModal({ isOpen, onClose, totalMissed }: ActivationSuccessModalProps) {
+export default function ActivationSuccessModal({ isOpen, onClose, totalMissed, isFirstPackage = false }: ActivationSuccessModalProps) {
     if (!isOpen) return null;
 
+    // For brand new users (first package), show simple success message
+    const showMissedROI = !isFirstPackage && totalMissed > 0;
+
     return (
-        <div className="fixed in set-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-purple-500/30 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
                 {/* Success Icon */}
                 <div className="flex justify-center mb-6">
@@ -28,8 +32,8 @@ export default function ActivationSuccessModal({ isOpen, onClose, totalMissed }:
                     🎉 Package Activated!
                 </h2>
 
-                {/* Missed Amount Display */}
-                {totalMissed > 0 && (
+                {/* Missed Amount Display - Only for existing users with missed ROI */}
+                {showMissedROI && (
                     <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-6">
                         <div className="text-center">
                             <p className="text-sm text-gray-300 mb-2">
@@ -48,8 +52,17 @@ export default function ActivationSuccessModal({ isOpen, onClose, totalMissed }:
                 {/* Success Message */}
                 <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-6 mb-6">
                     <p className="text-center text-gray-200 text-lg leading-relaxed">
-                        But from <span className="font-bold text-purple-400">tomorrow onwards</span>,
-                        you'll start earning from your team's success!
+                        {isFirstPackage ? (
+                            <>
+                                Welcome aboard! Your <span className="font-bold text-purple-400">1% daily ROI</span> starts tomorrow.
+                                Build your network to maximize earnings!
+                            </>
+                        ) : (
+                            <>
+                                From <span className="font-bold text-purple-400">tomorrow onwards</span>,
+                                you'll start earning from your team's success!
+                            </>
+                        )}
                     </p>
                 </div>
 
@@ -59,8 +72,11 @@ export default function ActivationSuccessModal({ isOpen, onClose, totalMissed }:
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="text-sm text-gray-300">
-                        Your commissions will start from the next ROI distribution.
-                        Keep building your network to maximize your earnings!
+                        {isFirstPackage ? (
+                            <>Your 1% daily ROI will be credited automatically. Invite friends to earn even more through our referral program!</>
+                        ) : (
+                            <>Your commissions will start from the next ROI distribution. Keep building your network to maximize your earnings!</>
+                        )}
                     </p>
                 </div>
 
@@ -69,7 +85,7 @@ export default function ActivationSuccessModal({ isOpen, onClose, totalMissed }:
                     onClick={onClose}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
                 >
-                    Got it! Let's Start Earning
+                    {isFirstPackage ? "Let's Get Started! 🚀" : "Got it! Let's Start Earning"}
                 </button>
             </div>
 

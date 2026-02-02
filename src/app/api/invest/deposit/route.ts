@@ -89,13 +89,25 @@ export async function POST(req: Request) {
                 }
             });
 
+            // Check if this is the user's first package (check for any previous COMPLETED investments)
+            const previousInvestments = await prisma.investment.count({
+                where: {
+                    userId: user.id,
+                    status: { in: ["COMPLETED", "ACTIVE"] },
+                    id: { not: investment.id } // Exclude the current investment
+                }
+            });
+
+            const isFirstPackage = previousInvestments === 0;
+
             return NextResponse.json({
                 message: "✅ Package activated from wallet! 1% daily ROI has started.",
                 investmentId: investment.id,
                 verified: true,
                 amount: depositAmount,
                 mode: "package",
-                paymentMethod: "wallet_balance"
+                paymentMethod: "wallet_balance",
+                isFirstPackage
             }, { status: 201 });
         }
 

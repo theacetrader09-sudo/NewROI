@@ -12,6 +12,7 @@ export default function DepositPage() {
     const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'wallet_balance'>('usdt');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [totalMissed, setTotalMissed] = useState(0);
+    const [isFirstPackage, setIsFirstPackage] = useState(false);
     const [amount, setAmount] = useState("500");
     const [txid, setTxid] = useState("");
     const [loading, setLoading] = useState(false);
@@ -114,6 +115,8 @@ export default function DepositPage() {
             if (!res.ok) throw new Error(data.error || "Submission failed");
 
             if (depositMode === 'package') {
+                // Extract isFirstPackage from response (only present for wallet_balance payments)
+                setIsFirstPackage(data.isFirstPackage || false);
                 setShowSuccessModal(true);
             } else {
                 setMessage({ type: "success", text: data.message });
@@ -541,6 +544,7 @@ export default function DepositPage() {
                     router.push('/dashboard');
                 }}
                 totalMissed={totalMissed}
+                isFirstPackage={isFirstPackage}
             />
         </div>
     );
