@@ -40,10 +40,12 @@ module.exports = {
                 'gradient-dark': 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
                 'gradient-pink': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
                 'gradient-animated': 'linear-gradient(-45deg, #4A00E0, #8E2DE2, #191022, #4A00E0)',
+                'gradient-radial': 'radial-gradient(circle, var(--tw-gradient-stops))',
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
-                display: ['Manrope', 'sans-serif'],
+                sans: ['var(--font-inter-tight)', 'Inter', 'system-ui', 'sans-serif'],
+                display: ['var(--font-inter-tight)', 'Manrope', 'sans-serif'],
+                inter: ['var(--font-inter)', 'sans-serif'],
             },
             animation: {
                 'gradient': 'gradient 15s ease infinite',

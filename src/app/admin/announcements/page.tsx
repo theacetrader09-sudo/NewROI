@@ -146,19 +146,20 @@ export default function AdminAnnouncementsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white p-6">
+        <div className="responsive-padding" style={{ minHeight: '100vh', background: '#0a0a0f', color: 'white' }}>
             {/* Header */}
-            <div className="max-w-6xl mx-auto">
-                <div className="flex items-center gap-4 mb-8">
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 16px)', marginBottom: 'clamp(20px, 4vw, 32px)', flexWrap: 'wrap' }}>
                     <button
                         onClick={() => router.back()}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        className="card"
+                        style={{ padding: '8px', border: 'none', background: 'var(--glass-bg)', cursor: 'pointer' }}
                     >
-                        <ArrowLeft className="w-5 h-5" />
+                        <ArrowLeft style={{ width: '20px', height: '20px' }} />
                     </button>
-                    <div>
-                        <h1 className="text-2xl font-bold">Announcements</h1>
-                        <p className="text-white/60 text-sm">Manage popup announcements for users</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: '800', margin: 0 }}>Announcements</h1>
+                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 'clamp(0.75rem, 2vw, 0.9rem)', margin: 0 }}>Manage popup announcements for users</p>
                     </div>
                 </div>
 
@@ -166,17 +167,18 @@ export default function AdminAnnouncementsPage() {
                 {!showCreateForm && (
                     <button
                         onClick={() => setShowCreateForm(true)}
-                        className="mb-6 flex items-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-medium transition-colors"
+                        className="btn btn-primary"
+                        style={{ marginBottom: 'clamp(16px, 3vw, 24px)', display: 'flex', alignItems: 'center', gap: '8px', padding: 'clamp(10px, 2vw, 14px) clamp(16px, 3vw, 24px)', width: '100%' }}
                     >
-                        <Plus className="w-5 h-5" />
-                        Create New Announcement
+                        <Plus style={{ width: '20px', height: '20px', flexShrink: 0 }} />
+                        <span>Create New Announcement</span>
                     </button>
                 )}
 
                 {/* Create Form */}
                 {showCreateForm && (
-                    <div className="mb-8 p-6 bg-white/5 border border-white/10 rounded-2xl">
-                        <h2 className="text-lg font-semibold mb-4">New Announcement</h2>
+                    <div className="glass" style={{ marginBottom: 'clamp(20px, 4vw, 32px)', padding: 'clamp(16px, 4vw, 24px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <h2 style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: '700', marginBottom: 'clamp(12px, 3vw, 16px)' }}>New Announcement</h2>
 
                         <div className="space-y-4">
                             {/* Title */}
@@ -299,62 +301,83 @@ export default function AdminAnnouncementsPage() {
                         {announcements.map((ann) => (
                             <div
                                 key={ann.id}
-                                className={`p-4 rounded-2xl border transition-colors ${ann.isActive
-                                    ? "bg-white/5 border-purple-500/30"
-                                    : "bg-white/[0.02] border-white/10"
-                                    }`}
+                                style={{
+                                    padding: 'clamp(12px, 3vw, 16px)',
+                                    borderRadius: '16px',
+                                    border: `1px solid ${ann.isActive ? 'rgba(168, 85, 247, 0.3)' : 'rgba(255,255,255,0.1)'}`,
+                                    background: ann.isActive ? 'rgba(168, 85, 247, 0.05)' : 'rgba(255,255,255,0.02)'
+                                }}
+                                className="card"
                             >
-                                <div className="flex gap-4">
+                                <div style={{ display: 'flex', gap: 'clamp(12px, 3vw, 16px)', flexWrap: 'wrap' }}>
                                     {/* Thumbnail */}
                                     <img
                                         src={ann.imageUrl}
                                         alt={ann.title}
-                                        className="w-24 h-24 object-cover rounded-xl border border-white/10"
+                                        style={{ width: 'clamp(60px, 15vw, 100px)', height: 'clamp(60px, 15vw, 100px)', objectFit: 'cover', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}
                                     />
 
                                     {/* Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div>
-                                                <h3 className="font-semibold truncate">{ann.title}</h3>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <h3 style={{ fontWeight: '700', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.title}</h3>
                                                 {ann.description && (
-                                                    <p className="text-sm text-white/60 truncate">{ann.description}</p>
+                                                    <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: 'rgba(255,255,255,0.6)', margin: '4px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ann.description}</p>
                                                 )}
                                             </div>
-                                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${ann.isActive
-                                                ? "bg-green-500/20 text-green-400"
-                                                : "bg-white/10 text-white/40"
-                                                }`}>
+                                            <div style={{
+                                                padding: '4px 10px',
+                                                borderRadius: '12px',
+                                                fontSize: 'clamp(0.7rem, 1.5vw, 0.75rem)',
+                                                fontWeight: '600',
+                                                background: ann.isActive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)',
+                                                color: ann.isActive ? '#10b981' : 'rgba(255,255,255,0.4)',
+                                                flexShrink: 0
+                                            }}>
                                                 {ann.isActive ? "Active" : "Inactive"}
                                             </div>
                                         </div>
-                                        <p className="text-xs text-white/40 mt-2">
+                                        <p style={{ fontSize: 'clamp(0.7rem, 1.5vw, 0.75rem)', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
                                             Created: {new Date(ann.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex flex-col gap-2">
+                                    <div style={{ display: 'flex', gap: '8px' }}>
                                         <button
                                             onClick={() => toggleActive(ann.id, ann.isActive)}
-                                            className={`p-2 rounded-lg transition-colors ${ann.isActive
-                                                ? "bg-green-500/20 hover:bg-green-500/30 text-green-400"
-                                                : "bg-white/10 hover:bg-white/20 text-white/60"
-                                                }`}
+                                            style={{
+                                                padding: '10px',
+                                                borderRadius: '8px',
+                                                border: 'none',
+                                                background: ann.isActive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)',
+                                                color: ann.isActive ? '#10b981' : 'rgba(255,255,255,0.6)',
+                                                cursor: 'pointer',
+                                                flexShrink: 0
+                                            }}
                                             title={ann.isActive ? "Deactivate" : "Activate"}
                                         >
                                             {ann.isActive ? (
-                                                <ToggleRight className="w-5 h-5" />
+                                                <ToggleRight style={{ width: '20px', height: '20px' }} />
                                             ) : (
-                                                <ToggleLeft className="w-5 h-5" />
+                                                <ToggleLeft style={{ width: '20px', height: '20px' }} />
                                             )}
                                         </button>
                                         <button
                                             onClick={() => handleDelete(ann.id)}
-                                            className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+                                            style={{
+                                                padding: '10px',
+                                                background: 'rgba(239, 68, 68, 0.2)',
+                                                color: '#ef4444',
+                                                borderRadius: '8px',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                flexShrink: 0
+                                            }}
                                             title="Delete"
                                         >
-                                            <Trash2 className="w-5 h-5" />
+                                            <Trash2 style={{ width: '20px', height: '20px' }} />
                                         </button>
                                     </div>
                                 </div>

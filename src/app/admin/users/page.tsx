@@ -33,17 +33,16 @@ export default function AdminUsersPage() {
     };
 
     return (
-        <div style={{ padding: '40px' }}>
-            <header style={{ marginBottom: '32px' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: '800' }}>User Management</h1>
-                <p style={{ color: 'var(--text-secondary)' }}>View and manage all registered members.</p>
+        <div className="responsive-padding">
+            <header style={{ marginBottom: '24px' }}>
+                <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.8rem)', fontWeight: '800' }}>User Management</h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>View and manage all registered members.</p>
             </header>
 
-            {/* Search Bar */}
             <form onSubmit={handleSearch} style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', gap: '12px', maxWidth: '500px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div style={{ position: 'relative', flex: 1 }}>
-                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
                         <input
                             type="text"
                             placeholder="Search by name, email, or referral code..."
@@ -54,20 +53,21 @@ export default function AdminUsersPage() {
                                 border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
                                 color: 'white',
-                                outline: 'none'
+                                outline: 'none',
+                                fontSize: 'clamp(0.85rem, 2vw, 1rem)'
                             }}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px' }}>
+                    <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px', width: '100%' }}>
                         Search
                     </button>
                 </div>
             </form>
 
             {/* Users Table */}
-            <div className="glass" style={{ overflow: 'auto' }}>
+            <div className="glass" style={{ overflow: 'auto', borderRadius: '12px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)' }}>

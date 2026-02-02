@@ -41,10 +41,9 @@ export default async function AdminDepositsPage() {
 
     return (
         <div className="responsive-padding" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Pending Deposits Section */}
-            <header style={{ marginBottom: '24px' }}>
-                <h1 style={{ fontSize: '1.6rem', fontWeight: '800' }}>Deposit Verification</h1>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Review TXIDs and manually activate packages.</p>
+            {/* Pending Deposits Section */}\n            <header style={{ marginBottom: '20px' }}>
+                <h1 style={{ fontSize: 'clamp(1.3rem, 4vw, 1.6rem)', fontWeight: '800' }}>Deposit Verification</h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'clamp(0.8rem, 2vw, 0.9rem)' }}>Review TXIDs and manually activate packages.</p>
             </header>
 
             {/* Mobile-friendly card layout for pending deposits */}
@@ -120,9 +119,9 @@ export default async function AdminDepositsPage() {
             </div>
 
             {/* Approved Deposits Ledger */}
-            <header style={{ marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: '700' }}>Approved Deposits Ledger</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            <header style={{ marginBottom: '20px' }}>
+                <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.4rem)', fontWeight: '700' }}>Approved Deposits Ledger</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)' }}>
                     View auto-approved vs manually-approved deposits
                 </p>
             </header>

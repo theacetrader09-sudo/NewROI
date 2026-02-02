@@ -80,17 +80,17 @@ export default function AdminSettingsPage() {
     }
 
     return (
-        <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto' }}>
-            <header style={{ marginBottom: '32px' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <SettingsIcon size={28} />
-                    System Configuration
+        <div className="responsive-padding" style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <header style={{ marginBottom: 'clamp(20px, 4vw, 32px)' }}>
+                <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.8rem)', fontWeight: '800', display: 'flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 12px)', flexWrap: 'wrap' }}>
+                    <SettingsIcon style={{ width: 'clamp(24px, 5vw, 28px)', height: 'clamp(24px, 5vw, 28px)' }} />
+                    <span>System Configuration</span>
                 </h1>
-                <p style={{ color: 'var(--text-secondary)' }}>Manage platform-wide settings and parameters.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>Manage platform-wide settings and parameters.</p>
             </header>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid var(--glass-border)' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--glass-border)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                 {[
                     { id: "roi", label: "ROI Settings", icon: <Percent size={16} /> },
                     { id: "levels", label: "Commission Levels", icon: <DollarSign size={16} /> },
@@ -101,7 +101,7 @@ export default function AdminSettingsPage() {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         style={{
-                            padding: '12px 20px',
+                            padding: 'clamp(10px, 2vw, 12px) clamp(14px, 3vw, 20px)',
                             background: 'transparent',
                             border: 'none',
                             borderBottom: activeTab === tab.id ? '2px solid var(--accent-blue)' : '2px solid transparent',
@@ -110,8 +110,10 @@ export default function AdminSettingsPage() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            fontSize: '0.9rem',
-                            fontWeight: activeTab === tab.id ? '600' : '400'
+                            fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                            fontWeight: activeTab === tab.id ? '600' : '400',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0
                         }}
                     >
                         {tab.icon}
@@ -136,11 +138,11 @@ export default function AdminSettingsPage() {
             )}
 
             {/* Tab Content */}
-            <div className="glass" style={{ padding: '32px' }}>
+            <div className="glass" style={{ padding: 'clamp(16px, 4vw, 32px)' }}>
                 {activeTab === "roi" && (
                     <div>
-                        <h3 style={{ marginBottom: '20px' }}>Daily ROI Percentage</h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+                        <h3 style={{ marginBottom: '16px', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: '700' }}>Daily ROI Percentage</h3>
+                        <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: 'var(--text-secondary)', marginBottom: '20px' }}>
                             Current: <strong>{roiPercent}%</strong> (Applied to all active investments daily at 00:00 UTC)
                         </p>
                         <div style={{ marginBottom: '24px' }}>
@@ -169,11 +171,11 @@ export default function AdminSettingsPage() {
 
                 {activeTab === "levels" && (
                     <div>
-                        <h3 style={{ marginBottom: '20px' }}>10-Level Commission Rates (%)</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                        <h3 style={{ marginBottom: '16px', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: '700' }}>10-Level Commission Rates (%)</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 'clamp(12px, 3vw, 16px)', marginBottom: '20px' }}>
                             {levelRates.map((rate, i) => (
                                 <div key={i}>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: 'var(--text-secondary)' }}>
                                         Level {i + 1}
                                     </label>
                                     <input
@@ -205,8 +207,8 @@ export default function AdminSettingsPage() {
 
                 {activeTab === "wallet" && (
                     <div>
-                        <h3 style={{ marginBottom: '20px' }}>Admin Crypto Wallet</h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+                        <h3 style={{ marginBottom: '16px', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: '700' }}>Admin Crypto Wallet</h3>
+                        <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: 'var(--text-secondary)', marginBottom: '20px' }}>
                             This address is displayed to users for deposits.
                         </p>
                         <div style={{ marginBottom: '24px' }}>
@@ -232,13 +234,13 @@ export default function AdminSettingsPage() {
 
                 {activeTab === "system" && (
                     <div>
-                        <h3 style={{ marginBottom: '20px' }}>System Control Switches</h3>
+                        <h3 style={{ marginBottom: '16px', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: '700' }}>System Control Switches</h3>
 
-                        <div className="card" style={{ padding: '20px', marginBottom: '16px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <h4 style={{ marginBottom: '4px' }}>Maintenance Mode</h4>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Block all user access to the platform</p>
+                        <div className="card" style={{ padding: 'clamp(14px, 3vw, 20px)', marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <h4 style={{ marginBottom: '4px', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)' }}>Maintenance Mode</h4>
+                                    <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.8rem)', color: 'var(--text-secondary)' }}>Block all user access to the platform</p>
                                 </div>
                                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                                     <input
@@ -257,11 +259,11 @@ export default function AdminSettingsPage() {
                             </div>
                         </div>
 
-                        <div className="card" style={{ padding: '20px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <h4 style={{ marginBottom: '4px' }}>ROI Holiday</h4>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Pause daily ROI distribution (cron will skip)</p>
+                        <div className="card" style={{ padding: 'clamp(14px, 3vw, 20px)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <h4 style={{ marginBottom: '4px', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)' }}>ROI Holiday</h4>
+                                    <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.8rem)', color: 'var(--text-secondary)' }}>Pause daily ROI distribution (cron will skip)</p>
                                 </div>
                                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                                     <input

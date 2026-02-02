@@ -21,14 +21,14 @@ export default async function AdminWithdrawalsPage() {
     });
 
     return (
-        <div style={{ padding: '40px' }}>
-            <header style={{ marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Withdrawal Requests</h1>
-                <p style={{ color: 'var(--text-secondary)' }}>Review and approve manual payout requests.</p>
+        <div className="responsive-padding">
+            <header style={{ marginBottom: '24px' }}>
+                <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.8rem)', fontWeight: '800' }}>Withdrawal Requests</h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>Review and approve manual payout requests.</p>
             </header>
 
-            <div className="glass" style={{ width: '100%', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <div className="glass" style={{ width: '100%', overflow: 'auto', borderRadius: '12px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)' }}>
                             <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>MEMBER</th>

@@ -4,10 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import ActivationSuccessModal from "@/components/dashboard/ActivationSuccessModal";
+
 export default function DepositPage() {
     const router = useRouter();
     const [depositMode, setDepositMode] = useState<'wallet' | 'package'>('package');
     const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'wallet_balance'>('usdt');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [totalMissed, setTotalMissed] = useState(0);
     const [amount, setAmount] = useState("500");
     const [txid, setTxid] = useState("");
     const [loading, setLoading] = useState(false);
@@ -21,7 +25,20 @@ export default function DepositPage() {
     useEffect(() => {
         fetchBalance();
         fetchAdminWallet();
+        fetchMissedTotal();
     }, []);
+
+    const fetchMissedTotal = async () => {
+        try {
+            const res = await fetch("/api/user/missed-opportunities");
+            const data = await res.json();
+            if (res.ok) {
+                setTotalMissed(data.totalMissed || 0);
+            }
+        } catch (err) {
+            console.error("Failed to fetch missed total");
+        }
+    };
 
     const fetchBalance = async () => {
         try {
@@ -96,12 +113,16 @@ export default function DepositPage() {
 
             if (!res.ok) throw new Error(data.error || "Submission failed");
 
-            setMessage({ type: "success", text: data.message });
-            setAmount("");
-            setTxid("");
-            // Refresh balance after successful wallet-based transaction
-            if (paymentMethod === 'wallet_balance') {
-                fetchBalance();
+            if (depositMode === 'package') {
+                setShowSuccessModal(true);
+            } else {
+                setMessage({ type: "success", text: data.message });
+                setAmount("");
+                setTxid("");
+                // Refresh balance after successful wallet-based transaction
+                if (paymentMethod === 'wallet_balance') {
+                    fetchBalance();
+                }
             }
         } catch (err: any) {
             setMessage({ type: "error", text: err.message });
@@ -512,6 +533,15 @@ export default function DepositPage() {
             </div>
 
             {/* Bottom navigation is handled by layout.tsx */}
+
+            <ActivationSuccessModal
+                isOpen={showSuccessModal}
+                onClose={() => {
+                    setShowSuccessModal(false);
+                    router.push('/dashboard');
+                }}
+                totalMissed={totalMissed}
+            />
         </div>
     );
 }

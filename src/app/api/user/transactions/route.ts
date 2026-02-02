@@ -66,11 +66,28 @@ export async function GET(req: Request) {
             dateCondition = { createdAt: { lte: end } };
         }
 
+        // Check if user has active investments
+        const activeInvestmentsCount = await prisma.investment.count({
+            where: {
+                userId: (session.user as any).id,
+                status: "ACTIVE"
+            }
+        });
+
         // Build where clause
-        const whereClause = {
+        const whereClause: any = {
             userId: (session.user as any).id,
             ...(type && { type: type as any }),
-            type: { not: "FEE" }, // Hide FEE transactions from user view
+            // If user has active investments, hide MISSED_ROI from general history
+            // If user is inactive, they might still want to see them here?
+            // Requirement: "Hidden from the main transaction history after the user activates a package"
+            // So if activeInvestmentsCount > 0, exclude MISSED_ROI
+            ...(activeInvestmentsCount > 0 ? {
+                type: { notIn: ["FEE", "MISSED_ROI"] }
+            } : {
+                // If inactive, just hide FEE (MISSED_ROI will be visible)
+                type: { not: "FEE" }
+            }),
             ...dateCondition
         };
 
@@ -96,7 +113,7 @@ export async function GET(req: Request) {
                 // Solve: requested = (net + 0.29) / 0.95
                 const netAmount = Number(tx.amount);
                 const originalAmount = (netAmount + 0.29) / 0.95;
-                
+
                 return {
                     ...tx,
                     amount: tx.amount,
@@ -104,7 +121,7 @@ export async function GET(req: Request) {
                     netAmount: netAmount // What they'll receive (for reference)
                 };
             }
-            
+
             // For all other transaction types, displayAmount = amount
             return {
                 ...tx,
