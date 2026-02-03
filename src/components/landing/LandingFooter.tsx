@@ -5,27 +5,10 @@ export default function LandingFooter() {
     const footerLinks = {
         product: [
             { name: "Features", href: "#features" },
-            { name: "Pricing", href: "#pricing" },
             { name: "Dashboard", href: "/dashboard" },
-            { name: "API", href: "#" },
         ],
         company: [
             { name: "About Us", href: "#" },
-            { name: "Careers", href: "#" },
-            { name: "Blog", href: "#" },
-            { name: "Press Kit", href: "#" },
-        ],
-        resources: [
-            { name: "Documentation", href: "#" },
-            { name: "Help Center", href: "#" },
-            { name: "Community", href: "#" },
-            { name: "Contact", href: "#" },
-        ],
-        legal: [
-            { name: "Privacy Policy", href: "#" },
-            { name: "Terms of Service", href: "#" },
-            { name: "Cookie Policy", href: "#" },
-            { name: "Disclaimer", href: "#" },
         ],
     };
 
@@ -41,9 +24,9 @@ export default function LandingFooter() {
         <footer className="bg-black border-t border-gray-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 {/* Main Footer Content */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-                    {/* Brand Column */}
-                    <div className="col-span-2 md:col-span-1">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                    {/* Brand Column - Takes more space */}
+                    <div className="md:col-span-2">
                         <Link href="/" className="flex items-center space-x-2 mb-4">
                             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
                                 <span className="text-white font-bold text-sm">N</span>
@@ -93,40 +76,6 @@ export default function LandingFooter() {
                         <h3 className="text-white font-semibold mb-4">Company</h3>
                         <ul className="space-y-3">
                             {footerLinks.company.map((link) => (
-                                <li key={link.name}>
-                                    <Link
-                                        href={link.href}
-                                        className="text-gray-400 hover:text-purple-400 transition-colors text-sm"
-                                    >
-                                        {link.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Resources Links */}
-                    <div>
-                        <h3 className="text-white font-semibold mb-4">Resources</h3>
-                        <ul className="space-y-3">
-                            {footerLinks.resources.map((link) => (
-                                <li key={link.name}>
-                                    <Link
-                                        href={link.href}
-                                        className="text-gray-400 hover:text-purple-400 transition-colors text-sm"
-                                    >
-                                        {link.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Legal Links */}
-                    <div>
-                        <h3 className="text-white font-semibold mb-4">Legal</h3>
-                        <ul className="space-y-3">
-                            {footerLinks.legal.map((link) => (
                                 <li key={link.name}>
                                     <Link
                                         href={link.href}
