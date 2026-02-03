@@ -81,7 +81,7 @@ export default function CTASection() {
                         </div>
                         <div className="flex items-center space-x-2">
                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full box-shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                            <span>Cancel anytime</span>
+                            <span>AI-powered automation</span>
                         </div>
                     </div>
                 </motion.div>
