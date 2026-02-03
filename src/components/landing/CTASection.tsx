@@ -35,7 +35,7 @@ export default function CTASection() {
                     {/* Badge */}
                     <div className="inline-flex items-center px-4 py-2 bg-white/[0.03] border border-white/10 rounded-full mb-8 backdrop-blur-sm">
                         <span className="text-sm text-purple-300 font-medium tracking-wide">
-                            Join 50,000+ Active Users
+                            Join 5,000+ Active Users
                         </span>
                     </div>
 
