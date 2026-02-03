@@ -20,7 +20,7 @@ export default function FAQSection() {
         },
         {
             question: "When can I withdraw my earnings?",
-            answer: "Withdrawal availability depends on your package. Starter packages allow weekly withdrawals, Professional packages allow daily withdrawals, and Diamond packages offer instant withdrawals with no waiting period.",
+            answer: "Withdrawals are available to you anytime! You can request your withdrawal whenever you want through your dashboard. Simply submit a withdrawal request and our team will process it promptly.",
         },
         {
             question: "What are level commissions?",
