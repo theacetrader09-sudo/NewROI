@@ -15,6 +15,7 @@ export default function AdminSettingsPage() {
     // Form states
     const [roiPercent, setRoiPercent] = useState(1.0);
     const [levelRates, setLevelRates] = useState<number[]>([6, 5, 2, 2, 1, 1, 0.5, 0.5, 0.25, 0.10]);
+    const [levelUnlockReqs, setLevelUnlockReqs] = useState<number[]>([1, 2, 6, 8, 12, 14, 16, 22, 28, 30]);
     const [adminWallet, setAdminWallet] = useState("");
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [roiHoliday, setRoiHoliday] = useState(false);
@@ -31,6 +32,9 @@ export default function AdminSettingsPage() {
                 setSettings(data);
                 setRoiPercent(data.dailyRoiPercent);
                 setLevelRates(JSON.parse(data.levelConfig));
+                if (data.levelUnlockConfig) {
+                    setLevelUnlockReqs(JSON.parse(data.levelUnlockConfig));
+                }
                 setAdminWallet(data.adminWallet);
                 setMaintenanceMode(data.maintenanceMode);
                 setRoiHoliday(data.roiHoliday);
@@ -94,6 +98,7 @@ export default function AdminSettingsPage() {
                 {[
                     { id: "roi", label: "ROI Settings", icon: <Percent size={16} /> },
                     { id: "levels", label: "Commission Levels", icon: <DollarSign size={16} /> },
+                    { id: "unlock", label: "Level Unlock", icon: <DollarSign size={16} /> },
                     { id: "wallet", label: "Admin Wallet", icon: <Wallet size={16} /> },
                     { id: "system", label: "System Modes", icon: <Power size={16} /> }
                 ].map(tab => (
@@ -201,6 +206,45 @@ export default function AdminSettingsPage() {
                             style={{ width: '100%', padding: '14px' }}
                         >
                             {saving ? "Saving..." : "Update Commission Rates"}
+                        </button>
+                    </div>
+                )}
+
+                {activeTab === "unlock" && (
+                    <div>
+                        <h3 style={{ marginBottom: '16px', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: '700' }}>Level Unlock Requirements</h3>
+                        <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                            Set the number of <strong>direct referrals</strong> required to unlock each commission level.
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 'clamp(12px, 3vw, 16px)', marginBottom: '20px' }}>
+                            {levelUnlockReqs.map((req, i) => (
+                                <div key={i}>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: 'var(--text-secondary)' }}>
+                                        Level {i + 1}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--glass-border)', color: 'white', padding: '10px', borderRadius: '8px', outline: 'none' }}
+                                        value={req}
+                                        onChange={(e) => {
+                                            const updated = [...levelUnlockReqs];
+                                            updated[i] = parseInt(e.target.value) || 0;
+                                            setLevelUnlockReqs(updated);
+                                        }}
+                                    />
+                                    <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{req} directs</small>
+                                </div>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => handleSave({ levelUnlockConfig: levelUnlockReqs })}
+                            disabled={saving}
+                            className="btn btn-primary"
+                            style={{ width: '100%', padding: '14px' }}
+                        >
+                            {saving ? "Saving..." : "Update Level Requirements"}
                         </button>
                     </div>
                 )}

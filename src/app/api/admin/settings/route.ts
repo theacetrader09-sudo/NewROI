@@ -19,6 +19,7 @@ export async function GET() {
                 data: {
                     dailyRoiPercent: 1.0,
                     levelConfig: JSON.stringify([6, 5, 2, 2, 1, 1, 0.5, 0.5, 0.25, 0.10]),
+                    levelUnlockConfig: JSON.stringify([1, 2, 6, 8, 12, 14, 16, 22, 28, 30]),
                     adminWallet: "0x15C1eC04D1Db26ff82d66b0654790335292BdB66",
                     maintenanceMode: false,
                     roiHoliday: false
@@ -52,6 +53,7 @@ export async function PATCH(req: Request) {
                 data: {
                     dailyRoiPercent: 1.0,
                     levelConfig: JSON.stringify([6, 5, 2, 2, 1, 1, 0.5, 0.5, 0.25, 0.10]),
+                    levelUnlockConfig: JSON.stringify([1, 2, 6, 8, 12, 14, 16, 22, 28, 30]),
                     adminWallet: "0x15C1eC04D1Db26ff82d66b0654790335292BdB66",
                     maintenanceMode: false,
                     roiHoliday: false
@@ -65,6 +67,7 @@ export async function PATCH(req: Request) {
             data: {
                 dailyRoiPercent: body.dailyRoiPercent !== undefined ? body.dailyRoiPercent : settings.dailyRoiPercent,
                 levelConfig: body.levelConfig !== undefined ? JSON.stringify(body.levelConfig) : settings.levelConfig,
+                levelUnlockConfig: body.levelUnlockConfig !== undefined ? JSON.stringify(body.levelUnlockConfig) : settings.levelUnlockConfig,
                 adminWallet: body.adminWallet !== undefined ? body.adminWallet : settings.adminWallet,
                 maintenanceMode: body.maintenanceMode !== undefined ? body.maintenanceMode : settings.maintenanceMode,
                 roiHoliday: body.roiHoliday !== undefined ? body.roiHoliday : settings.roiHoliday

@@ -3,6 +3,27 @@ import prisma from "@/lib/prisma";
 // Fallback Level Commission Config (used only if database settings not found)
 const FALLBACK_LEVEL_COMMISSIONS = [0.06, 0.05, 0.02, 0.02, 0.01, 0.01, 0.005, 0.005, 0.0025, 0.001];
 
+// Fallback Level Unlock Requirements (direct referrals needed per level)
+const FALLBACK_LEVEL_UNLOCK_REQUIREMENTS = [1, 2, 6, 8, 12, 14, 16, 22, 28, 30];
+
+/**
+ * Calculates the highest unlocked level based on direct referral count
+ * @param directCount - Number of direct referrals the user has
+ * @param requirements - Array of direct referral requirements per level (length 10)
+ * @returns Highest unlocked level (1-10), or 0 if no levels unlocked
+ */
+function calculateUnlockedLevel(directCount: number, requirements: number[]): number {
+    let unlockedLevel = 0;
+    for (let i = 0; i < requirements.length; i++) {
+        if (directCount >= requirements[i]) {
+            unlockedLevel = i + 1; // Level 1-10 (1-indexed)
+        } else {
+            break; // Requirements are in ascending order, so we can break early
+        }
+    }
+    return unlockedLevel;
+}
+
 /**
  * Distributes 1% Daily ROI to all users with ACTIVE investments.
  * Also distributes level commissions to uplines based on ROI earnings.
@@ -19,9 +40,10 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
 
     console.log(`[ROI] Starting ${isManual ? 'MANUAL' : 'AUTO'} distribution for ${today}...`);
 
-    // 0. Fetch commission rates from SystemSettings
+    // 0. Fetch commission rates and level unlock requirements from SystemSettings
     const settings = await prisma.systemSettings.findFirst();
     let levelCommissions = FALLBACK_LEVEL_COMMISSIONS;
+    let levelUnlockRequirements = FALLBACK_LEVEL_UNLOCK_REQUIREMENTS;
 
     if (settings && settings.levelConfig) {
         try {
@@ -34,6 +56,18 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
         }
     } else {
         console.warn('[ROI] No system settings found, using fallback commission rates');
+    }
+
+    // Load level unlock requirements
+    if (settings && settings.levelUnlockConfig) {
+        try {
+            levelUnlockRequirements = JSON.parse(settings.levelUnlockConfig);
+            console.log('[ROI] Using level unlock requirements from database:', levelUnlockRequirements);
+        } catch (e) {
+            console.warn('[ROI] Failed to parse levelUnlockConfig, using fallback requirements');
+        }
+    } else {
+        console.log('[ROI] Using fallback level unlock requirements:', levelUnlockRequirements);
     }
 
     // 1. Get all active investments
@@ -168,28 +202,59 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                     const hasActivePackage = upline.investments.length > 0;
 
                     if (hasActivePackage) {
-                        // Credit upline with commission
-                        const uplinePrevBal = Number(upline.balance);
-                        const uplineNewBal = uplinePrevBal + commissionAmount;
-
-                        await tx.user.update({
-                            where: { id: upline.id },
-                            data: { balance: uplineNewBal }
+                        // Count direct referrals for level unlock check
+                        const directReferralsCount = await tx.user.count({
+                            where: { uplineId: upline.id }
                         });
 
-                        // Log commission transaction
-                        await tx.transaction.create({
-                            data: {
-                                userId: upline.id,
-                                type: "COMMISSION",
-                                amount: commissionAmount,
-                                previousBalance: uplinePrevBal,
-                                newBalance: uplineNewBal,
-                                description: `Level ${level} commission from ${investment.user.email}'s ROI ($${roiAmount.toFixed(2)})`,
-                                status: "COMPLETED",
-                                referenceId: investment.id
-                            }
-                        });
+                        // Calculate unlocked level based on direct referrals
+                        const unlockedLevel = calculateUnlockedLevel(
+                            directReferralsCount,
+                            levelUnlockRequirements
+                        );
+
+                        // Check if this level is unlocked
+                        if (level <= unlockedLevel) {
+                            // Level is unlocked - Credit upline with commission
+                            const uplinePrevBal = Number(upline.balance);
+                            const uplineNewBal = uplinePrevBal + commissionAmount;
+
+                            await tx.user.update({
+                                where: { id: upline.id },
+                                data: { balance: uplineNewBal }
+                            });
+
+                            // Log commission transaction
+                            await tx.transaction.create({
+                                data: {
+                                    userId: upline.id,
+                                    type: "COMMISSION",
+                                    amount: commissionAmount,
+                                    previousBalance: uplinePrevBal,
+                                    newBalance: uplineNewBal,
+                                    description: `Level ${level} commission from ${investment.user.email}'s ROI ($${roiAmount.toFixed(2)})`,
+                                    status: "COMPLETED",
+                                    referenceId: investment.id
+                                }
+                            });
+                        } else {
+                            // Level is LOCKED - Create MISSED_ROI record
+                            const uplineBalance = Number(upline.balance);
+                            const requiredDirects = levelUnlockRequirements[level - 1];
+
+                            await tx.transaction.create({
+                                data: {
+                                    userId: upline.id,
+                                    type: "MISSED_ROI",
+                                    amount: commissionAmount,
+                                    previousBalance: uplineBalance,
+                                    newBalance: uplineBalance, // Balance doesn't change
+                                    description: `🔒 Level ${level} locked - Need ${requiredDirects} directs (have ${directReferralsCount}) - Commission from ${investment.user.email}'s ROI ($${roiAmount.toFixed(2)})`,
+                                    status: "MISSED",
+                                    referenceId: investment.id
+                                }
+                            });
+                        }
                     } else {
                         // User has NO active package - create MISSED_ROI record
                         const uplineBalance = Number(upline.balance);

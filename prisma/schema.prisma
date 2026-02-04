@@ -105,6 +105,7 @@ model SystemSettings {
   
   dailyRoiPercent Decimal  @default(1.0) @db.Decimal(5, 2)  // Changed from Float
   levelConfig     String   // JSON array of 10 percentages
+  levelUnlockConfig String? // JSON array of direct referral requirements per level
   adminWallet     String?
   
   maintenanceMode Boolean @default(false)
