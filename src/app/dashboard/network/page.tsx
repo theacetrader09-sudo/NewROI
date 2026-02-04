@@ -497,12 +497,11 @@ export default function NetworkPage() {
                             })
                         )}
                     </div>
-                    </div>
                 )}
-        </div>
+            </div>
 
-            {/* Custom Animations */ }
-    <style jsx>{`
+            {/* Custom Animations */}
+            <style jsx>{`
                 @keyframes shimmer {
                     0% { transform: translateX(-100%); }
                     100% { transform: translateX(200%); }
@@ -522,6 +521,6 @@ export default function NetworkPage() {
                     animation: floatMedium 2.5s ease-in-out infinite;
                 }
             `}</style>
-        </div >
+        </div>
     );
 }
