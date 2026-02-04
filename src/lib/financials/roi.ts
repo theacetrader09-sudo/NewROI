@@ -202,9 +202,16 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                     const hasActivePackage = upline.investments.length > 0;
 
                     if (hasActivePackage) {
-                        // Count direct referrals for level unlock check
+                        // Count direct referrals WITH ACTIVE PACKAGES ONLY for level unlock check
                         const directReferralsCount = await tx.user.count({
-                            where: { uplineId: upline.id }
+                            where: {
+                                uplineId: upline.id,
+                                investments: {
+                                    some: {
+                                        status: "ACTIVE"
+                                    }
+                                }
+                            }
                         });
 
                         // Calculate unlocked level based on direct referrals

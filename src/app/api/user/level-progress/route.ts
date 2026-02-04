@@ -23,9 +23,16 @@ export async function GET() {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // Count direct referrals
+        // Count ONLY direct referrals with ACTIVE packages
         const directReferralsCount = await prisma.user.count({
-            where: { uplineId: user.id }
+            where: {
+                uplineId: user.id,
+                investments: {
+                    some: {
+                        status: "ACTIVE"
+                    }
+                }
+            }
         });
 
         // Load level unlock requirements from system settings
