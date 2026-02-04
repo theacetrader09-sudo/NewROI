@@ -68,11 +68,29 @@ export async function GET() {
             where: { uplineId: user.id }
         });
 
+        // Calculate total MISSED ROI
+        const missedTransactions = await prisma.transaction.findMany({
+            where: {
+                userId: user.id,
+                type: 'MISSED_ROI',
+                status: 'MISSED'
+            },
+            select: {
+                amount: true
+            }
+        });
+
+        const totalMissedRoi = missedTransactions.reduce(
+            (sum, tx) => sum + Number(tx.amount),
+            0
+        );
+
         return NextResponse.json({
             ...user,
             totalInvested,
             totalEarnings,
-            referralCount
+            referralCount,
+            totalMissedRoi
         });
 
     } catch (error) {

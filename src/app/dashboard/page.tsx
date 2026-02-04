@@ -16,6 +16,7 @@ export default function ModernDashboard() {
     const [loading, setLoading] = useState(true);
     const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
     const [roiTimeLeft, setRoiTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+    const [levelProgress, setLevelProgress] = useState<any>(null);
 
     useEffect(() => {
         if (status === "loading") return;
@@ -53,11 +54,23 @@ export default function ModernDashboard() {
 
     const fetchDashboardData = async () => {
         try {
-            const res = await fetch("/api/user/profile");
-            const data = await res.json();
-            if (res.ok) {
-                setUser(data);
+            // Fetch user profile and level progress in parallel for faster loading
+            const [profileRes, levelRes] = await Promise.all([
+                fetch("/api/user/profile"),
+                fetch("/api/user/level-progress")
+            ]);
+
+            const profileData = await profileRes.json();
+
+            if (profileRes.ok) {
+                setUser(profileData);
                 fetchTransactions();
+            }
+
+            // Set level progress immediately from parallel fetch
+            if (levelRes.ok) {
+                const levelData = await levelRes.json();
+                setLevelProgress(levelData);
             }
         } catch (err) {
             console.error("Failed to fetch dashboard:", err);
@@ -77,6 +90,8 @@ export default function ModernDashboard() {
             console.error("Failed to fetch transactions:", err);
         }
     };
+
+
 
     if (loading || !user) {
         return <DashboardSkeleton />;
@@ -240,6 +255,83 @@ export default function ModernDashboard() {
                         <h3 className="text-xl font-bold text-white">${Number(user.totalEarnings || 0).toFixed(2)}</h3>
                     </div>
                 </div>
+            </section>
+
+            {/* New Missed ROI and Level Progress Cards */}
+            <section className="grid grid-cols-2 gap-4 px-6 mt-4">
+                {/* Missed ROI Card */}
+                <div className="rounded-3xl p-5 border border-red-500/20 relative overflow-hidden" style={{ backgroundColor: '#1E142B' }}>
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 rounded-full blur-2xl" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl mb-3 relative z-10" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                        <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <p className="text-xs font-medium text-white/40 relative z-10">Missed ROI</p>
+                    <div className="mt-1 relative z-10">
+                        <h3
+                            className="text-xl font-bold"
+                            style={{
+                                color: '#FF6B35',
+                                textShadow: '0 0 8px rgba(255, 107, 53, 0.5), 0 0 12px rgba(255, 107, 53, 0.2)'
+                            }}
+                        >
+                            ${Number(user.totalMissedRoi || 0).toFixed(2)}
+                        </h3>
+                        <p className="text-[9px] text-white/30 mt-1">Locked levels</p>
+                    </div>
+                </div>
+
+                {/* Current Level Progress Card */}
+                {!levelProgress ? (
+                    // Loading skeleton
+                    <div className="rounded-3xl p-5 border border-white/5 relative overflow-hidden" style={{ backgroundColor: '#1E142B' }}>
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-purple-600/10 rounded-full blur-2xl animate-pulse" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl mb-3 relative z-10 bg-white/10 animate-pulse">
+                            <div className="h-3 w-3 bg-white/20 rounded" />
+                        </div>
+                        <p className="text-xs font-medium text-white/40 relative z-10">Current Level</p>
+                        <div className="mt-1 relative z-10">
+                            <div className="h-6 w-24 bg-white/10 rounded animate-pulse" />
+                            <div className="h-2 w-16 bg-white/5 rounded animate-pulse mt-2" />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="rounded-3xl p-5 border border-white/5 relative overflow-hidden" style={{ backgroundColor: '#1E142B' }}>
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-purple-600/10 rounded-full blur-2xl animate-pulse" />
+                        <div
+                            className="flex h-8 w-8 items-center justify-center rounded-xl mb-3 relative z-10 font-extrabold text-xs animate-pulse-slow"
+                            style={{
+                                background: 'linear-gradient(135deg, #A855F7, #7C3AED)',
+                                boxShadow: '0 0 24px rgba(139, 92, 246, 0.8), 0 0 12px rgba(168, 85, 247, 0.6)',
+                                color: '#FFFFFF',
+                                textShadow: '0 0 8px rgba(255, 255, 255, 0.9), 0 0 4px rgba(255, 255, 255, 0.6)'
+                            }}
+                        >
+                            {levelProgress.unlockedLevel}
+                        </div>
+                        <p className="text-xs font-medium text-white/40 relative z-10">Current Level</p>
+                        <div className="mt-1 relative z-10">
+                            <h3
+                                className="text-xl font-bold"
+                                style={{
+                                    color: '#FFFFFF',
+                                    textShadow: '0 0 8px rgba(139, 92, 246, 0.6), 0 0 12px rgba(139, 92, 246, 0.3)'
+                                }}
+                            >
+                                Level {levelProgress.unlockedLevel}/10
+                            </h3>
+                            {levelProgress.nextUnlock && (
+                                <p className="text-[9px] text-purple-400 mt-1">
+                                    {levelProgress.nextUnlock.remaining} more for L{levelProgress.nextUnlock.level}
+                                </p>
+                            )}
+                            {!levelProgress.nextUnlock && (
+                                <p className="text-[9px] text-purple-400 mt-1">All unlocked! 🎉</p>
+                            )}
+                        </div>
+                    </div>
+                )}
             </section>
 
             {/* Income Overview Chart */}
