@@ -22,11 +22,13 @@ export default function NetworkPage() {
     const [referralCode, setReferralCode] = useState("");
     const [copied, setCopied] = useState(false);
     const [activeTab, setActiveTab] = useState<'total' | 'income' | 'successful'>('income');
+    const [levelProgress, setLevelProgress] = useState<any>(null);
 
     useEffect(() => {
         fetchUserProfile();
         fetchNetwork();
-    }, []);
+        fetchLevelProgress();
+    }, []);;
 
     const fetchUserProfile = async () => {
         try {
@@ -87,6 +89,18 @@ export default function NetworkPage() {
             console.error("Failed to fetch network:", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchLevelProgress = async () => {
+        try {
+            const res = await fetch("/api/user/level-progress");
+            if (res.ok) {
+                const data = await res.json();
+                setLevelProgress(data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch level progress:", err);
         }
     };
 
@@ -267,66 +281,247 @@ export default function NetworkPage() {
                     </div>
                 </div>
 
-                {/* Members List */}
-                <div className="flex flex-col space-y-4">
-                    {loading ? (
-                        <div className="text-center py-10 text-[#ab9db9]">Loading your network...</div>
-                    ) : filteredMembers.length === 0 ? (
-                        <div className="text-center py-10">
-                            <div className="text-4xl mb-3">👥</div>
-                            <p className="text-white font-medium">No referrals yet</p>
-                            <p className="text-sm text-[#ab9db9] mt-1">Share your code to start building your team</p>
+                {/* Content based on active tab */}
+                {activeTab === 'income' && levelProgress ? (
+                    <div className="flex flex-col space-y-3 pb-6">
+                        {/* Direct Referrals Summary Card */}
+                        <div
+                            className="rounded-2xl p-5 border border-white/10 relative overflow-hidden"
+                            style={{
+                                background: '              linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05))',
+                            }}
+                        >
+                            <div className="absolute -right-8 -top-8 w-24 h-24 bg-purple-600/20 rounded-full blur-xl" />
+                            <div className="relative z-10 flex justify-between items-center">
+                                <div>
+                                    <p className="text-sm text-white/60 mb-1">Your Direct Referrals</p>
+                                    <h3 className="text-3xl font-bold text-white">{levelProgress.directReferralsCount}</h3>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm text-white/60 mb-1">Levels Unlocked</p>
+                                    <h3 className="text-3xl font-bold text-emerald-400">{levelProgress.unlockedLevel}/10</h3>
+                                </div>
+                            </div>
                         </div>
-                    ) : (
-                        filteredMembers.map((member) => {
-                            // Calculate daily ROI (1% of investment)
-                            const dailyRoi = member.totalInvested * 0.01;
 
-                            return (
-                                <div
-                                    key={member.id}
-                                    className="rounded-xl p-4 border border-white/5 flex flex-col gap-3"
-                                    style={{ backgroundColor: '#211c27' }}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarColor(member.name)}`}>
-                                                {getInitials(member.name)}
+                        {/* Next Milestone */}
+                        {levelProgress.nextUnlock && (
+                            <div className="rounded-xl p-3 bg-yellow-500/10 border border-yellow-500/20">
+                                <p className="text-xs font-bold text-yellow-400 mb-1">🎯 NEXT MILESTONE</p>
+                                <p className="text-sm text-white">
+                                    Recruit <span className="font-bold text-yellow-400">{levelProgress.nextUnlock.remaining} more</span> direct{levelProgress.nextUnlock.remaining === 1 ? '' : 's'} to unlock Level {levelProgress.nextUnlock.level}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Level Progress Bars */}
+                        <div className="flex flex-col space-y-3">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => {
+                                const requiredDirects = levelProgress.levelRequirements[level - 1];
+                                const isUnlocked = level <= levelProgress.unlockedLevel;
+                                const progress = Math.min((levelProgress.directReferralsCount / requiredDirects) * 100, 100);
+
+                                return (
+                                    <div
+                                        key={level}
+                                        className="rounded-xl p-4 border transition-all duration-300"
+                                        style={{
+                                            backgroundColor: isUnlocked ? 'rgba(16, 185, 129, 0.05)' : 'rgba(107, 114, 128, 0.05)',
+                                            borderColor: isUnlocked ? 'rgba(16, 185, 129, 0.2)' : 'rgba(107, 114, 128, 0.1)',
+                                        }}
+                                    >
+                                        {/* Level Header */}
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs"
+                                                    style={{
+                                                        background: isUnlocked
+                                                            ? 'linear-gradient(135deg, #10b981, #059669)'
+                                                            : 'linear-gradient(135deg, #6b7280, #4b5563)',
+                                                        boxShadow: isUnlocked ? '0 0 12px rgba(16, 185, 129, 0.3)' : 'none'
+                                                    }}
+                                                >
+                                                    {level}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-white">Level {level}</p>
+                                                    <p className="text-[10px] text-white/50">{requiredDirects} direct{requiredDirects === 1 ? '' : 's'} needed</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="text-sm font-bold text-white">{member.name}</h3>
-                                                <p className="text-xs text-[#ab9db9]">
-                                                    {member.totalInvested > 0
-                                                        ? `Invested: $${member.totalInvested.toFixed(2)}`
-                                                        : 'No active package'}
-                                                </p>
+                                            <div className="text-right">
+                                                {isUnlocked ? (
+                                                    <div className="flex items-center gap-1 text-emerald-400">
+                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                                        </svg>
+                                                        <span className="text-xs font-bold">UNLOCKED</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-xs font-bold" style={{ color: isUnlocked ? '#10b981' : '#9ca3af' }}>
+                                                        {Math.round(progress)}%
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-bold text-emerald-400">
-                                                {member.commission > 0 ? `+ $${member.commission.toFixed(2)}` : '$0.00'}
-                                            </p>
-                                            <p className="text-[10px] text-[#ab9db9] font-medium">Level {member.level}</p>
+
+                                        {/* Progress Bar */}
+                                        <div className="relative overflow-hidden rounded-full h-2 bg-white/5">
+                                            {/* Background glow for unlocked */}
+                                            {isUnlocked && (
+                                                <div
+                                                    className="absolute inset-0 animate-pulse"
+                                                    style={{
+                                                        background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2))',
+                                                    }}
+                                                />
+                                            )}
+
+                                            {/* Animated progress fill */}
+                                            <div
+                                                className="h-full relative overflow-hidden transition-all duration-700 ease-out"
+                                                style={{
+                                                    width: `${isUnlocked ? 100 : progress}%`,
+                                                    background: isUnlocked
+                                                        ? 'linear-gradient(90deg, #10b981, #059669)'
+                                                        : 'linear-gradient(90deg, #8b5cf6, #6d28d9)',
+                                                    boxShadow: isUnlocked
+                                                        ? '0 0 10px rgba(16, 185, 129, 0.5)'
+                                                        : '0 0 8px rgba(139, 92, 246, 0.4)',
+                                                }}
+                                            >
+                                                {/* Shimmer effect */}
+                                                <div
+                                                    className="absolute inset-0 opacity-40"
+                                                    style={{
+                                                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent)',
+                                                        animation: 'shimmer 2s infinite',
+                                                    }}
+                                                />
+
+                                                {/* Floating particles */}
+                                                <div className="absolute top-0 left-1/4 w-1 h-full bg-white/30 animate-float-slow" />
+                                                <div className="absolute top-0 right-1/3 w-1 h-full bg-white/20 animate-float-medium" style={{ animationDelay: '0.5s' }} />
+                                            </div>
+                                        </div>
+
+                                        {/* Status Text */}
+                                        <div className="mt-2 flex items-center justify-between text-[10px]">
+                                            <span className="text-white/50">
+                                                {levelProgress.directReferralsCount} / {requiredDirects} directs
+                                            </span>
+                                            {!isUnlocked && requiredDirects - levelProgress.directReferralsCount > 0 && (
+                                                <span className="text-purple-400 font-bold">
+                                                    {requiredDirects - levelProgress.directReferralsCount} more needed
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
-                                    {member.totalInvested > 0 && (
-                                        <div className="flex items-center gap-2 bg-white/5 p-2 rounded-lg">
-                                            <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                            </svg>
-                                            <p className="text-xs text-gray-300">
-                                                <span className="font-bold">
-                                                    {member.level === 1 ? '10%' : member.level === 2 ? '5%' : member.level === 3 ? '3%' : member.level === 4 ? '2%' : '1%'} Commission
-                                                </span> from ${dailyRoi.toFixed(2)} daily ROI
-                                            </p>
+                                );
+                            })}
+                        </div>
+
+                        {/* All Unlocked Celebration */}
+                        {levelProgress.unlockedLevel === 10 && (
+                            <div
+                                className="rounded-2xl p-5 text-center border relative overflow-hidden"
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1))',
+                                    borderColor: 'rgba(16, 185, 129, 0.3)',
+                                }}
+                            >
+                                <div className="absolute top-0 left-0 w-full h-full opacity-20" style={{ backgroundImage: 'radial-gradient(circle, rgba(16, 185, 129, 0.3) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                                <p className="text-2xl mb-2">🎉</p>
+                                <p className="text-lg font-bold text-emerald-400 mb-1">All Levels Unlocked!</p>
+                                <p className="text-sm text-white/70">You're earning maximum commissions on all 10 levels. Keep building!</p>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    /* Members List for Total and Successful tabs */
+                    <div className="flex flex-col space-y-4">
+                        {loading ? (
+                            <div className="text-center py-10 text-[#ab9db9]">Loading your network...</div>
+                        ) : filteredMembers.length === 0 ? (
+                            <div className="text-center py-10">
+                                <div className="text-4xl mb-3">👥</div>
+                                <p className="text-white font-medium">No referrals yet</p>
+                                <p className="text-sm text-[#ab9db9] mt-1">Share your code to start building your team</p>
+                            </div>
+                        ) : (
+                            filteredMembers.map((member) => {
+                                // Calculate daily ROI (1% of investment)
+                                const dailyRoi = member.totalInvested * 0.01;
+
+                                return (
+                                    <div
+                                        key={member.id}
+                                        className="rounded-xl p-4 border border-white/5 flex flex-col gap-3"
+                                        style={{ backgroundColor: '#211c27' }}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarColor(member.name)}`}>
+                                                    {getInitials(member.name)}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-sm font-bold text-white">{member.name}</h3>
+                                                    <p className="text-xs text-[#ab9db9]">
+                                                        {member.totalInvested > 0
+                                                            ? `Invested: $${member.totalInvested.toFixed(2)}`
+                                                            : 'No active package'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-bold text-emerald-400">
+                                                    {member.commission > 0 ? `+ $${member.commission.toFixed(2)}` : '$0.00'}
+                                                </p>
+                                                <p className="text-[10px] text-[#ab9db9] font-medium">Level {member.level}</p>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                            )
-                        })
-                    )}
-                </div>
-            </div>
+                                        {member.totalInvested > 0 && (
+                                            <div className="flex items-center gap-2 bg-white/5 p-2 rounded-lg">
+                                                <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                </svg>
+                                                <p className="text-xs text-gray-300">
+                                                    <span className="font-bold">
+                                                        {member.level === 1 ? '10%' : member.level === 2 ? '5%' : member.level === 3 ? '3%' : member.level === 4 ? '2%' : '1%'} Commission
+                                                    </span> from ${dailyRoi.toFixed(2)} daily ROI
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                    </div>
+                )}
         </div>
+
+            {/* Custom Animations */ }
+    <style jsx>{`
+                @keyframes shimmer {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(200%); }
+                }
+                @keyframes floatSlow {
+                    0%, 100% { transform: translateY(0px) scale(1); opacity: 0.3; }
+                    50% { transform: translateY(-4px) scale(1.1); opacity: 0.6; }
+                }
+                @keyframes floatMedium {
+                    0%, 100% { transform: translateY(0px); opacity: 0.4; }
+                    50% { transform: translateY(-3px); opacity: 0.7; }
+                }
+                .animate-float-slow {
+                    animation: floatSlow 3s ease-in-out infinite;
+                }
+                .animate-float-medium {
+                    animation: floatMedium 2.5s ease-in-out infinite;
+                }
+            `}</style>
+        </div >
     );
 }
