@@ -7,6 +7,7 @@ import Link from "next/link";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ActiveInvestmentCard from "@/components/dashboard/ActiveInvestmentCard";
 import InactiveUserAlert from "@/components/dashboard/InactiveUserAlert";
+import RecentPayoutsCard from "@/components/dashboard/RecentPayoutsCard";
 
 export default function ModernDashboard() {
     const { data: session, status } = useSession();
@@ -218,6 +219,11 @@ export default function ModernDashboard() {
                     </button>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">Withdraw</p>
                 </Link>
+            </section>
+
+            {/* Recent Payouts Card */}
+            <section className="px-6 pb-6">
+                <RecentPayoutsCard />
             </section>
 
             {/* Inactive User Alert - Shows if user has no active package */}
