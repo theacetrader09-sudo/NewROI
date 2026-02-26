@@ -78,8 +78,8 @@ export default function DepositPage() {
 
         // Validate amount
         const numAmount = Number(amount);
-        if (numAmount < 2) {
-            setMessage({ type: "error", text: "Minimum deposit is $2" });
+        if (numAmount < 35) {
+            setMessage({ type: "error", text: "Minimum deposit is $35" });
             setLoading(false);
             return;
         }
@@ -310,7 +310,7 @@ export default function DepositPage() {
                                     placeholder="0.00"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    className={`w-full h-12 pl-9 pr-16 bg-[#1a1025] border rounded-xl text-white text-lg font-bold placeholder:text-white/20 focus:ring-1 transition-all shadow-inner outline-none ${amount && Number(amount) > 0 && Number(amount) < 2
+                                    className={`w-full h-12 pl-9 pr-16 bg-[#1a1025] border rounded-xl text-white text-lg font-bold placeholder:text-white/20 focus:ring-1 transition-all shadow-inner outline-none ${amount && Number(amount) > 0 && Number(amount) < 35
                                         ? 'border-red-500/50 focus:ring-red-500 focus:border-red-500'
                                         : 'border-white/10 focus:ring-purple-500 focus:border-purple-500'
                                         }`}
@@ -324,14 +324,14 @@ export default function DepositPage() {
                             </div>
 
                             {/* Real-time validation warning */}
-                            {amount && Number(amount) > 0 && Number(amount) < 2 && (
+                            {amount && Number(amount) > 0 && Number(amount) < 35 && (
                                 <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30 animate-pulse">
                                     <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                     <div className="flex-1">
-                                        <p className="text-red-400 text-sm font-semibold">Minimum Deposit: $2</p>
-                                        <p className="text-red-400/80 text-xs mt-0.5">Please enter at least $2 to proceed with your deposit.</p>
+                                        <p className="text-red-400 text-sm font-semibold">Minimum Deposit: $35</p>
+                                        <p className="text-red-400/80 text-xs mt-0.5">Please enter at least $35 to proceed with your deposit.</p>
                                     </div>
                                 </div>
                             )}
@@ -392,10 +392,10 @@ export default function DepositPage() {
                             {depositMode === 'package' && (
                                 <button
                                     onClick={() => setPaymentMethod('wallet_balance')}
-                                    disabled={balance < 2}
+                                    disabled={balance < 35}
                                     className={`w-full flex items-center justify-between p-3 rounded-xl border relative overflow-hidden transition-all ${paymentMethod === 'wallet_balance'
                                         ? 'border-purple-500/50 bg-gradient-to-r from-purple-500/10 to-transparent'
-                                        : balance < 2
+                                        : balance < 35
                                             ? 'border-white/5 bg-white/5 opacity-50 cursor-not-allowed'
                                             : 'border-white/10 bg-white/5 hover:bg-white/10'
                                         }`}
@@ -409,7 +409,7 @@ export default function DepositPage() {
                                         <div className="text-left">
                                             <p className="font-bold text-white text-sm">Wallet Balance</p>
                                             <p className="text-[10px] text-white/60">
-                                                Available: ${balance.toFixed(2)} {balance < 2 && '• Min $2 required'}
+                                                Available: ${balance.toFixed(2)} {balance < 35 && '• Min $35 required'}
                                             </p>
                                         </div>
                                     </div>

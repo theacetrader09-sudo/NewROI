@@ -15,7 +15,7 @@ const faqs: FAQ[] = [
     },
     {
         question: "What is the minimum deposit amount?",
-        answer: "The minimum deposit amount is $10 USDT. You can deposit using USDT on the BEP20 (Binance Smart Chain) network."
+        answer: "The minimum deposit amount is $35 USDT. You can deposit using USDT on the BEP20 (Binance Smart Chain) network."
     },
     {
         question: "How do I withdraw my earnings?",

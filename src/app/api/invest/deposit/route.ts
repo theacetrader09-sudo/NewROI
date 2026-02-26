@@ -28,8 +28,8 @@ export async function POST(req: Request) {
         }
 
         // Minimum deposit validation
-        if (depositAmount < 2) {
-            return NextResponse.json({ error: "Minimum amount is $2" }, { status: 400 });
+        if (depositAmount < 35) {
+            return NextResponse.json({ error: "Minimum amount is $35" }, { status: 400 });
         }
 
         const user = await prisma.user.findUnique({
