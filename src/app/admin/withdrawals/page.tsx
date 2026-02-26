@@ -4,6 +4,11 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import ApproveWithdrawalButton from "@/components/admin/ApproveWithdrawalButton";
 
+// Fee constants (must match verify route)
+const PLATFORM_FEE_PERCENT = 5;
+const NETWORK_FEE_PERCENT = 0.20;
+const TOTAL_FEE_PERCENT = PLATFORM_FEE_PERCENT + NETWORK_FEE_PERCENT; // 5.20%
+
 export default async function AdminWithdrawalsPage() {
     const session = await getServerSession(authOptions);
 
@@ -28,11 +33,12 @@ export default async function AdminWithdrawalsPage() {
             </header>
 
             <div className="glass" style={{ width: '100%', overflow: 'auto', borderRadius: '12px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '750px' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)' }}>
                             <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>MEMBER</th>
-                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>AMOUNT</th>
+                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>REQUESTED</th>
+                            <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: '#22c55e' }}>✅ SEND TO USER</th>
                             <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>DESTINATION WALLET</th>
                             <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>DATE</th>
                             <th style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>ACTION</th>
@@ -41,33 +47,56 @@ export default async function AdminWithdrawalsPage() {
                     <tbody>
                         {pendingWithdrawals.length === 0 ? (
                             <tr>
-                                <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
                                     No withdrawal requests at the moment.
                                 </td>
                             </tr>
                         ) : (
-                            pendingWithdrawals.map((tx) => (
-                                <tr key={tx.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        <div style={{ fontWeight: '600' }}>{tx.user.name}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{tx.user.email}</div>
-                                    </td>
-                                    <td style={{ padding: '16px 24px', fontWeight: '700', color: 'var(--accent-red)' }}>
-                                        -${Number(tx.amount).toFixed(2)}
-                                    </td>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        <code style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', background: 'rgba(59, 130, 246, 0.05)', padding: '4px 8px', borderRadius: '4px' }}>
-                                            {tx.referenceId}
-                                        </code>
-                                    </td>
-                                    <td style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                        {new Date(tx.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td style={{ padding: '16px 24px' }}>
-                                        <ApproveWithdrawalButton id={tx.id} />
-                                    </td>
-                                </tr>
-                            ))
+                            pendingWithdrawals.map((tx) => {
+                                // tx.amount = net payout stored at request time
+                                const netPayout = Number(tx.amount);
+                                const originalAmount = netPayout / (1 - TOTAL_FEE_PERCENT / 100);
+                                const platformFee = (originalAmount * PLATFORM_FEE_PERCENT) / 100;
+                                const networkFee = (originalAmount * NETWORK_FEE_PERCENT) / 100;
+
+                                return (
+                                    <tr key={tx.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                                        <td style={{ padding: '16px 24px' }}>
+                                            <div style={{ fontWeight: '600' }}>{tx.user.name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{tx.user.email}</div>
+                                        </td>
+                                        {/* User requested this gross amount */}
+                                        <td style={{ padding: '16px 24px' }}>
+                                            <div style={{ fontWeight: '700', color: 'var(--accent-red)' }}>
+                                                ${originalAmount.toFixed(2)}
+                                            </div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                                Platform: -${platformFee.toFixed(2)} | Network: -${networkFee.toFixed(2)}
+                                            </div>
+                                        </td>
+                                        {/* Net amount admin must send */}
+                                        <td style={{ padding: '16px 24px' }}>
+                                            <div style={{ fontWeight: '800', fontSize: '1.1rem', color: '#22c55e' }}>
+                                                ${netPayout.toFixed(2)} USDT
+                                            </div>
+                                            <div style={{ fontSize: '0.7rem', color: '#86efac', marginTop: '2px' }}>
+                                                After 5% + 0.20% fees
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '16px 24px' }}>
+                                            <code style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', background: 'rgba(59, 130, 246, 0.05)', padding: '4px 8px', borderRadius: '4px' }}>
+                                                {tx.referenceId}
+                                            </code>
+                                        </td>
+                                        <td style={{ padding: '16px 24px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                            {new Date(tx.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td style={{ padding: '16px 24px' }}>
+                                            <ApproveWithdrawalButton id={tx.id} />
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>

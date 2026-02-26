@@ -23,15 +23,18 @@ export async function PATCH(req: Request) {
                 throw new Error("Invalid transaction or already processed");
             }
 
-            // Parse original withdrawal amount from description
-            const descMatch = transaction.description.match(/Original: \$(\d+\.?\d*)/);
-            if (!descMatch) {
-                throw new Error("Could not parse withdrawal amount");
-            }
+            // ─── Fee constants (must match withdraw/verify/route.ts) ───
+            const PLATFORM_FEE_PERCENT = 5;    // 5%
+            const NETWORK_FEE_PERCENT = 0.20; // 0.20%
+            const TOTAL_FEE_PERCENT = PLATFORM_FEE_PERCENT + NETWORK_FEE_PERCENT; // 5.20%
 
-            const originalAmount = parseFloat(descMatch[1]);
-            const platformFeeMatch = transaction.description.match(/Fee: \$(\d+\.?\d*)/);
-            const platformFee = platformFeeMatch ? parseFloat(platformFeeMatch[1]) : 0;
+            // tx.amount = net payout (after fees), stored at request time.
+            // Reverse-calculate the original gross amount the user requested.
+            // net = gross × (1 - totalFee%)  →  gross = net / (1 - totalFee%)
+            const netPayout = Number(transaction.amount);
+            const originalAmount = netPayout / (1 - TOTAL_FEE_PERCENT / 100);
+            const platformFee = (originalAmount * PLATFORM_FEE_PERCENT) / 100;
+            const networkFee = (originalAmount * NETWORK_FEE_PERCENT) / 100;
 
             // Check user still has sufficient balance
             const user = await tx.user.findUnique({
@@ -42,13 +45,13 @@ export async function PATCH(req: Request) {
                 throw new Error("User no longer has sufficient balance");
             }
 
-            // NOW DEDUCT BALANCE (balance was NOT deducted when requested)
+            // Deduct the ORIGINAL (gross) amount from user balance
             const updatedUser = await tx.user.update({
                 where: { id: transaction.userId },
                 data: { balance: { decrement: originalAmount } }
             });
 
-            // Update withdrawal transaction to COMPLETED
+            // Mark withdrawal as COMPLETED
             const updated = await tx.transaction.update({
                 where: { id },
                 data: {
@@ -58,7 +61,7 @@ export async function PATCH(req: Request) {
                 }
             });
 
-            // Create FEE transaction record for platform fee
+            // Record platform fee
             if (platformFee > 0) {
                 await tx.transaction.create({
                     data: {
@@ -73,10 +76,27 @@ export async function PATCH(req: Request) {
                 });
             }
 
-            return updated;
+            // Record network fee
+            if (networkFee > 0) {
+                await tx.transaction.create({
+                    data: {
+                        userId: transaction.userId,
+                        type: "FEE",
+                        amount: networkFee,
+                        previousBalance: Number(updatedUser.balance),
+                        newBalance: Number(updatedUser.balance),
+                        description: `Network fee (0.20%) for withdrawal #${id}`,
+                        status: "COMPLETED"
+                    }
+                });
+            }
+
+            return { updated, originalAmount, platformFee, networkFee, netPayout };
         });
 
-        return NextResponse.json({ message: "Withdrawal approved and balance deducted successfully" });
+        return NextResponse.json({
+            message: `Withdrawal approved. User balance deducted $${(result as any).originalAmount.toFixed(2)}. Admin should send $${(result as any).netPayout.toFixed(2)} to user.`
+        });
 
     } catch (error: any) {
         console.error("ADMIN_WITHDRAW_APPROVE_ERROR:", error);
