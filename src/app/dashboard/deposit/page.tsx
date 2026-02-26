@@ -286,7 +286,7 @@ export default function DepositPage() {
                                     </div>
                                     <div className="ml-auto text-right">
                                         <span className="text-white/50 block mb-0.5">Min Deposit</span>
-                                        <span className="text-white font-bold text-sm">$2</span>
+                                        <span className="text-white font-bold text-sm">$35</span>
                                     </div>
                                 </div>
                             </div>
