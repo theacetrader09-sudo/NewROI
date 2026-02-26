@@ -272,7 +272,12 @@ export default function DepositPage() {
                                 <div className="flex items-center gap-4 text-xs border-t border-white/10 pt-3">
                                     <div>
                                         <span className="text-white/50 block mb-0.5">ROI</span>
-                                        <span className="text-white font-bold text-sm">1%</span>
+                                        <span className="text-white font-bold text-sm">
+                                            {Number(amount) >= 25000 ? '5%' : Number(amount) >= 10000 ? '2%' : '1%'}
+                                        </span>
+                                        <span className="text-[9px] ml-0.5" style={{ color: Number(amount) >= 25000 ? '#F59E0B' : Number(amount) >= 10000 ? '#818CF8' : '#4ADE80' }}>
+                                            {Number(amount) >= 25000 ? '🏆' : Number(amount) >= 10000 ? '⭐' : ''}
+                                        </span>
                                     </div>
                                     <div className="w-px h-6 bg-white/10" />
                                     <div>
@@ -545,6 +550,7 @@ export default function DepositPage() {
                 }}
                 totalMissed={totalMissed}
                 isFirstPackage={isFirstPackage}
+                investmentAmount={Number(amount)}
             />
         </div>
     );

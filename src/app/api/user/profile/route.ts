@@ -37,7 +37,8 @@ export async function GET() {
                 status: 'ACTIVE'
             },
             select: {
-                amount: true
+                amount: true,
+                roiRate: true
             }
         });
 
@@ -45,6 +46,11 @@ export async function GET() {
             (sum, inv) => sum + Number(inv.amount),
             0
         );
+
+        // Highest roiRate among all active investments (in case user has multiple)
+        const activeRoiRate = investments.length > 0
+            ? Math.max(...investments.map(inv => Number(inv.roiRate)))
+            : 1.00; // Default 1% if no active investment
 
         // Calculate total earnings (ROI + Commissions)
         const earnings = await prisma.transaction.findMany({
@@ -90,7 +96,8 @@ export async function GET() {
             totalInvested,
             totalEarnings,
             referralCount,
-            totalMissedRoi
+            totalMissedRoi,
+            activeRoiRate
         });
 
     } catch (error) {

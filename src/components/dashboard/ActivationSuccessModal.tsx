@@ -6,14 +6,28 @@ interface ActivationSuccessModalProps {
     isOpen: boolean;
     onClose: () => void;
     totalMissed: number;
-    isFirstPackage?: boolean; // New prop to determine if this is first package
+    isFirstPackage?: boolean;
+    investmentAmount?: number; // NEW — used to show correct ROI tier
 }
 
-export default function ActivationSuccessModal({ isOpen, onClose, totalMissed, isFirstPackage = false }: ActivationSuccessModalProps) {
+// ── Tiered ROI helper (matches the same logic in approve/route.ts) ──────────
+function getTier(amount: number): { rate: number; label: string; color: string } {
+    if (amount >= 25000) return { rate: 5, label: "🏆 Platinum", color: "#F59E0B" };
+    if (amount >= 10000) return { rate: 2, label: "⭐ Gold", color: "#818CF8" };
+    return { rate: 1, label: "Standard", color: "#4ADE80" };
+}
+
+export default function ActivationSuccessModal({
+    isOpen,
+    onClose,
+    totalMissed,
+    isFirstPackage = false,
+    investmentAmount = 0,
+}: ActivationSuccessModalProps) {
     if (!isOpen) return null;
 
-    // For brand new users (first package), show simple success message
     const showMissedROI = !isFirstPackage && totalMissed > 0;
+    const tier = getTier(investmentAmount);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -32,7 +46,21 @@ export default function ActivationSuccessModal({ isOpen, onClose, totalMissed, i
                     🎉 Package Activated!
                 </h2>
 
-                {/* Missed Amount Display - Only for existing users with missed ROI */}
+                {/* ROI Tier Badge */}
+                <div className="flex justify-center mb-4">
+                    <span
+                        className="px-4 py-1.5 rounded-full text-sm font-bold"
+                        style={{
+                            background: `${tier.color}20`,
+                            border: `1px solid ${tier.color}50`,
+                            color: tier.color,
+                        }}
+                    >
+                        {tier.label} — {tier.rate}% Daily ROI
+                    </span>
+                </div>
+
+                {/* Missed Amount Display — only for existing users */}
                 {showMissedROI && (
                     <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-6">
                         <div className="text-center">
@@ -54,13 +82,29 @@ export default function ActivationSuccessModal({ isOpen, onClose, totalMissed, i
                     <p className="text-center text-gray-200 text-lg leading-relaxed">
                         {isFirstPackage ? (
                             <>
-                                Welcome aboard! Your <span className="font-bold text-purple-400">1% daily ROI</span> starts tomorrow.
-                                Build your network to maximize earnings!
+                                Welcome aboard! Your{" "}
+                                <span className="font-bold" style={{ color: tier.color }}>
+                                    {tier.rate}% daily ROI
+                                </span>{" "}
+                                starts tomorrow.
+                                {investmentAmount >= 10000 && (
+                                    <span className="block text-sm text-white/60 mt-1">
+                                        {investmentAmount >= 25000
+                                            ? "🏆 Platinum investor — maximum earnings unlocked!"
+                                            : "⭐ Gold investor — enhanced earnings unlocked!"}
+                                    </span>
+                                )}
+                                {" "}Build your network to maximize earnings!
                             </>
                         ) : (
                             <>
-                                From <span className="font-bold text-purple-400">tomorrow onwards</span>,
-                                you'll start earning from your team's success!
+                                From{" "}
+                                <span className="font-bold text-purple-400">tomorrow onwards</span>,
+                                you'll earn{" "}
+                                <span className="font-bold" style={{ color: tier.color }}>
+                                    {tier.rate}%/day
+                                </span>{" "}
+                                and commission from your team's success!
                             </>
                         )}
                     </p>
@@ -73,9 +117,9 @@ export default function ActivationSuccessModal({ isOpen, onClose, totalMissed, i
                     </svg>
                     <p className="text-sm text-gray-300">
                         {isFirstPackage ? (
-                            <>Your 1% daily ROI will be credited automatically. Invite friends to earn even more through our referral program!</>
+                            <>Your {tier.rate}% daily ROI will be credited automatically each day. Invite friends to earn even more through our referral program!</>
                         ) : (
-                            <>Your commissions will start from the next ROI distribution. Keep building your network to maximize your earnings!</>
+                            <>Your commissions and {tier.rate}% ROI will start from the next distribution. Keep building your network to maximize your earnings!</>
                         )}
                     </p>
                 </div>
@@ -91,18 +135,10 @@ export default function ActivationSuccessModal({ isOpen, onClose, totalMissed, i
 
             <style jsx>{`
                 @keyframes scale-in {
-                    0% {
-                        opacity: 0;
-                        transform: scale(0.9);
-                    }
-                    100% {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
+                    0% { opacity: 0; transform: scale(0.9); }
+                    100% { opacity: 1; transform: scale(1); }
                 }
-                .animate-scale-in {
-                    animation: scale-in 0.3s ease-out;
-                }
+                .animate-scale-in { animation: scale-in 0.3s ease-out; }
             `}</style>
         </div>
     );

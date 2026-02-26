@@ -246,8 +246,22 @@ export default function ModernDashboard() {
                     </div>
                     <p className="text-xs font-medium text-white/40">Daily ROI</p>
                     <div className="mt-1 flex items-baseline gap-1">
-                        <h3 className="text-xl font-bold text-white">1.00%</h3>
-                        <span className="text-[10px] text-green-400">Fixed</span>
+                        <h3 className="text-xl font-bold text-white">
+                            {Number(user.activeRoiRate || 1).toFixed(2)}%
+                        </h3>
+                        <span className="text-[10px] font-bold" style={{
+                            color: Number(user.activeRoiRate) >= 5
+                                ? '#F59E0B'  // gold for 5%
+                                : Number(user.activeRoiRate) >= 2
+                                    ? '#818CF8'  // indigo for 2%
+                                    : '#4ADE80'  // green for default
+                        }}>
+                            {Number(user.activeRoiRate) >= 5
+                                ? '🏆 Platinum'
+                                : Number(user.activeRoiRate) >= 2
+                                    ? '⭐ Gold'
+                                    : 'Standard'}
+                        </span>
                     </div>
                 </div>
                 <div className="rounded-3xl p-5 border border-white/5" style={{ backgroundColor: '#1E142B' }}>
