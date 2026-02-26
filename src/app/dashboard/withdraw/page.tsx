@@ -18,8 +18,8 @@ export default function WithdrawPage() {
     const [otpError, setOtpError] = useState("");
     const [resendCooldown, setResendCooldown] = useState(0);
 
-    const NETWORK_FEE = 0.29;
-    const PLATFORM_FEE_PERCENT = 5; // 5% withdrawal fee
+    const NETWORK_FEE_PERCENT = 0.20; // 0.20% network fee
+    const PLATFORM_FEE_PERCENT = 5;    // 5% platform fee
     const MIN_WITHDRAW = 10;
 
     useEffect(() => {
@@ -45,10 +45,14 @@ export default function WithdrawPage() {
         return (amt * PLATFORM_FEE_PERCENT) / 100;
     };
 
+    const getNetworkFee = () => {
+        const amt = parseFloat(amount) || 0;
+        return (amt * NETWORK_FEE_PERCENT) / 100;
+    };
+
     const getReceiveAmount = () => {
         const amt = parseFloat(amount) || 0;
-        const platformFee = getPlatformFee();
-        return Math.max(0, amt - platformFee - NETWORK_FEE);
+        return Math.max(0, amt - getPlatformFee() - getNetworkFee());
     };
 
     // Resend cooldown timer
@@ -298,8 +302,8 @@ export default function WithdrawPage() {
                         <p className="text-red-400 font-medium">-{getPlatformFee().toFixed(2)} USDT</p>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                        <p style={{ color: '#ab9db9' }}>Network Fee</p>
-                        <p className="text-red-400 font-medium">-{NETWORK_FEE.toFixed(2)} USDT</p>
+                        <p style={{ color: '#ab9db9' }}>Network Fee (0.20%)</p>
+                        <p className="text-red-400 font-medium">-{getNetworkFee().toFixed(2)} USDT</p>
                     </div>
                     <div className="border-t border-dashed my-2" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
                     <div className="flex justify-between items-center text-base">
