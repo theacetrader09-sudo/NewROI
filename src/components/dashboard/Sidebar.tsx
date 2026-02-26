@@ -77,7 +77,7 @@ export default function Sidebar() {
                             color: '#fff',
                             letterSpacing: '-0.5px'
                         }}>
-                            NovaQuant
+                            NeoQuant
                         </h2>
                         <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
                             Your AI Finance

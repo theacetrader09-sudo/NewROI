@@ -31,7 +31,7 @@ export default function LandingFooter() {
                             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
                                 <span className="text-white font-bold text-sm">N</span>
                             </div>
-                            <span className="text-white font-bold text-xl">NovaQuant</span>
+                            <span className="text-white font-bold text-xl">NeoQuant</span>
                         </Link>
                         <p className="text-gray-400 text-sm mb-6">
                             The future of automated earnings. Build wealth through our AI-powered ROI system.
@@ -92,7 +92,7 @@ export default function LandingFooter() {
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between">
                     <p className="text-gray-500 text-sm mb-4 md:mb-0">
-                        © {new Date().getFullYear()} NovaQuant. All rights reserved.
+                        © {new Date().getFullYear()} NeoQuant. All rights reserved.
                     </p>
                     <div className="flex items-center space-x-6">
                         <span className="text-gray-500 text-sm">Made with ❤️ for investors</span>

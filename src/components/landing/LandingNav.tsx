@@ -40,7 +40,7 @@ export default function LandingNav() {
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
                     <Link href="/" className="flex items-center z-50">
-                        <span className="text-white font-bold text-xl tracking-tight">NovaQuant</span>
+                        <span className="text-white font-bold text-xl tracking-tight">NeoQuant</span>
                     </Link>
 
                     {/* Desktop Navigation */}

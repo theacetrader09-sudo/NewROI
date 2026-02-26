@@ -104,7 +104,7 @@ export async function sendAdminDepositNotification(
                     </div>
                     
                     <div style="text-align: center; color: #64748b; font-size: 12px; margin-top: 20px;">
-                        <p>This is an automated notification from NovaQuant</p>
+                        <p>This is an automated notification from NeoQuant</p>
                     </div>
                 </div>
             `,
@@ -165,7 +165,7 @@ export async function sendAdminWithdrawalNotification(
                     </div>
                     
                     <div style="text-align: center; color: #64748b; font-size: 12px; margin-top: 20px;">
-                        <p>This is an automated notification from NovaQuant</p>
+                        <p>This is an automated notification from NeoQuant</p>
                     </div>
                 </div>
             `,

@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const interTight = Inter_Tight({ subsets: ["latin"], variable: '--font-inter-tight' });
 
 export const metadata: Metadata = {
-  title: "NovaQuant",
+  title: "NeoQuant",
   description: "Professional investment platform with automated returns",
 };
 

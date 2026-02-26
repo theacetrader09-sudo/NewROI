@@ -1,6 +1,6 @@
-# NovaQuant MLM ROI System — Project Handover
+# NeoQuant MLM ROI System — Project Handover
 
-**Project Name:** NovaQuant  
+**Project Name:** NeoQuant  
 **GitHub Repo:** https://github.com/theacetrader09-sudo/NewROI  
 **Tech Stack:** Next.js 16 · TypeScript · Prisma · PostgreSQL · NextAuth.js · Tailwind CSS  
 **Version Handed Over:** February 2026  
@@ -9,7 +9,7 @@
 
 ## 🗂 What This Project Is
 
-NovaQuant is a full-stack **MLM (Multi-Level Marketing) ROI investment platform** where:
+NeoQuant is a full-stack **MLM (Multi-Level Marketing) ROI investment platform** where:
 
 - Users register using a referral code
 - Users invest money and earn daily ROI (Return on Investment)
@@ -23,7 +23,7 @@ NovaQuant is a full-stack **MLM (Multi-Level Marketing) ROI investment platform*
 ## 🏗 Project Architecture
 
 ```
-NovaQuant/
+NeoQuant/
 ├── prisma/                  ← Database schema (PostgreSQL)
 │   ├── schema.prisma        ← Main DB models
 │   └── schema.production.prisma
