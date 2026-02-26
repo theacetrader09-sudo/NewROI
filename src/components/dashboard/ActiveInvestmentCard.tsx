@@ -15,6 +15,11 @@ export default function ActiveInvestmentCard({ user }: ActiveInvestmentCardProps
     const growthProgress = stakedAmount > 0 ? (totalProfit / stakedAmount) * 100 : 0;
     const hasActiveInvestment = stakedAmount > 0;
 
+    // Tiered ROI rate
+    const roiRate = Number(user.activeRoiRate || 1);
+    const tierLabel = roiRate >= 5 ? '🏆 Platinum' : roiRate >= 2 ? '⭐ Gold' : 'Standard';
+    const tierColor = roiRate >= 5 ? '#F59E0B' : roiRate >= 2 ? '#818CF8' : '#4ADE80';
+
     // Animate progress bar on mount
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -80,23 +85,36 @@ export default function ActiveInvestmentCard({ user }: ActiveInvestmentCardProps
                 </div>
 
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 gap-6 mb-5">
+                <div className="grid grid-cols-3 gap-4 mb-5">
                     {/* Staked Amount */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40 mb-2">
-                            Staked Amount
+                            Staked
                         </p>
-                        <h2 className="text-2xl font-extrabold text-white">
+                        <h2 className="text-lg font-extrabold text-white">
                             ${stakedAmount.toFixed(2)}
                         </h2>
+                    </div>
+
+                    {/* Daily ROI Rate */}
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40 mb-2">
+                            Daily ROI
+                        </p>
+                        <h2 className="text-lg font-extrabold" style={{ color: tierColor }}>
+                            {roiRate.toFixed(2)}%
+                        </h2>
+                        <span className="text-[9px] font-bold" style={{ color: tierColor, opacity: 0.8 }}>
+                            {tierLabel}
+                        </span>
                     </div>
 
                     {/* Total Profit */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40 mb-2">
-                            Total Profit
+                            Profit
                         </p>
-                        <h2 className="text-2xl font-extrabold text-green-400 flex items-center gap-1">
+                        <h2 className="text-lg font-extrabold text-green-400 flex items-center gap-1">
                             <span className="text-sm">+</span>
                             ${totalProfit.toFixed(2)}
                         </h2>
