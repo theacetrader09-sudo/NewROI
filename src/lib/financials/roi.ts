@@ -104,8 +104,10 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                 }
             }
 
-            // 3. Calculate ROI (Fixed 1%)
-            const roiAmount = Number(investment.amount) * 0.01;
+            // 3. Calculate ROI using investment's stored rate (supports tiered packages)
+            // roiRate is stored as a percentage (e.g. 1.00 = 1%, 2.00 = 2%, 5.00 = 5%)
+            const roiRateDecimal = Number(investment.roiRate) / 100;
+            const roiAmount = Number(investment.amount) * roiRateDecimal;
 
             // 4. Atomic Transaction for ROI Credit, Logging & Commission Distribution
             await prisma.$transaction(async (tx) => {
@@ -137,7 +139,7 @@ export async function distributeDailyROI(isManual: boolean = false, forceRerun: 
                         amount: roiAmount,
                         previousBalance: prevBalance,
                         newBalance: newBalance,
-                        description: `1% Daily ROI for package $${investment.amount}${descriptionSuffix}`,
+                        description: `${Number(investment.roiRate).toFixed(2)}% Daily ROI for package $${investment.amount}${descriptionSuffix}`,
                         status: "COMPLETED",
                         referenceId: investment.id
                     }
