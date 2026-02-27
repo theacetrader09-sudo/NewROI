@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { jwtVerify } from "jose";
 
 // Session duration: 30 days (extended for better UX)
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
@@ -13,9 +14,29 @@ export const authOptions: NextAuthOptions = {
             credentials: {
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" },
-                rememberMe: { label: "Remember Me", type: "text" }
+                rememberMe: { label: "Remember Me", type: "text" },
+                impersonationToken: { label: "Impersonation Token", type: "text" }
             },
             async authorize(credentials) {
+                // ── ADMIN IMPERSONATION PATH ────────────────────────────────
+                if (credentials?.impersonationToken && credentials.email === "__impersonate__") {
+                    try {
+                        const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!);
+                        const { payload } = await jwtVerify(credentials.impersonationToken, secret);
+
+                        // Payload has the target user's id, email, name, role
+                        return {
+                            id: payload.sub as string,
+                            email: payload.email as string,
+                            name: payload.name as string,
+                            role: payload.role as string,
+                        };
+                    } catch {
+                        throw new Error("Invalid or expired impersonation token");
+                    }
+                }
+
+                // ── NORMAL PASSWORD LOGIN PATH ──────────────────────────────
                 if (!credentials?.email || !credentials?.password) {
                     throw new Error("Invalid credentials");
                 }

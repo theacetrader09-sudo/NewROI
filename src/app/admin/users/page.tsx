@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Edit, Users as UsersIcon } from "lucide-react";
+import { Search, Edit, Users as UsersIcon, LogIn } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminUsersPage() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const [impersonating, setImpersonating] = useState<string | null>(null);
 
     useEffect(() => {
         fetchUsers();
@@ -30,6 +31,25 @@ export default function AdminUsersPage() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         fetchUsers();
+    };
+
+    const handleImpersonate = async (userId: string) => {
+        setImpersonating(userId);
+        try {
+            const res = await fetch("/api/admin/impersonate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId }),
+            });
+            const data = await res.json();
+            if (!res.ok) { alert(data.error || "Failed"); return; }
+            // Open a new tab silently — looks like normal navigation to the user
+            window.open(`/auth/impersonate?token=${data.token}`, "_blank");
+        } catch {
+            alert("Error generating access token.");
+        } finally {
+            setImpersonating(null);
+        }
     };
 
     return (
@@ -134,14 +154,39 @@ export default function AdminUsersPage() {
                                         {new Date(user.createdAt).toLocaleDateString()}
                                     </td>
                                     <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                                        <Link
-                                            href={`/admin/users/${user.id}`}
-                                            className="btn btn-outline"
-                                            style={{ padding: '6px 12px', fontSize: '0.75rem', gap: '6px', display: 'inline-flex', alignItems: 'center' }}
-                                        >
-                                            <Edit size={14} />
-                                            Edit
-                                        </Link>
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                            <Link
+                                                href={`/admin/users/${user.id}`}
+                                                className="btn btn-outline"
+                                                style={{ padding: '6px 12px', fontSize: '0.75rem', gap: '6px', display: 'inline-flex', alignItems: 'center' }}
+                                            >
+                                                <Edit size={14} />
+                                                Edit
+                                            </Link>
+                                            {user.role !== "SUPERADMIN" && (
+                                                <button
+                                                    onClick={() => handleImpersonate(user.id)}
+                                                    disabled={impersonating === user.id}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        fontSize: '0.75rem',
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        background: 'rgba(129,142,255,0.1)',
+                                                        border: '1px solid rgba(129,142,255,0.3)',
+                                                        color: '#818eff',
+                                                        borderRadius: '8px',
+                                                        cursor: impersonating === user.id ? 'wait' : 'pointer',
+                                                        opacity: impersonating === user.id ? 0.6 : 1,
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                >
+                                                    <LogIn size={14} />
+                                                    {impersonating === user.id ? 'Opening...' : 'Access'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))
