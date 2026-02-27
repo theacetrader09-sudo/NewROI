@@ -54,6 +54,12 @@ export default function LandingNav() {
                                 {item}
                             </button>
                         ))}
+                        <Link
+                            href="/about"
+                            className="text-white/70 hover:text-white transition-colors text-sm font-medium"
+                        >
+                            About Us
+                        </Link>
                     </div>
 
                     {/* Right Actions (Desktop) */}
@@ -101,6 +107,13 @@ export default function LandingNav() {
                                     {item}
                                 </button>
                             ))}
+                            <Link
+                                href="/about"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-left text-white/90 hover:text-white text-2xl font-medium border-b border-white/5 pb-4"
+                            >
+                                About Us
+                            </Link>
 
                             <div className="pt-8 flex flex-col space-y-4">
                                 <Link
