@@ -8,7 +8,7 @@ export default function LandingFooter() {
             { name: "Dashboard", href: "/dashboard" },
         ],
         company: [
-            { name: "About Us", href: "#" },
+            { name: "About Us", href: "/about" },
         ],
     };
 
