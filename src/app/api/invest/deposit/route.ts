@@ -4,6 +4,14 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { isValidTxHash } from "@/lib/bscscan";
 
+// ── Shared tier helper (mirrors approve/route.ts) ───────────────────────
+function getROIRate(amount: number): { rate: number; label: string } {
+    if (amount >= 30000) return { rate: 5.00, label: "Diamond (5%/day)" };
+    if (amount >= 10000) return { rate: 2.00, label: "Gold (2%/day)" };
+    if (amount >= 1000) return { rate: 1.00, label: "Silver (1%/day)" };
+    return { rate: 0.50, label: "Bronze (0.5%/day)" };
+}
+
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -57,13 +65,14 @@ export async function POST(req: Request) {
             }
 
             // Create ACTIVE investment from wallet balance
+            const tier = getROIRate(depositAmount);
             const investment = await prisma.investment.create({
                 data: {
                     userId: user.id,
                     amount: depositAmount,
                     txid: `WALLET-${Date.now()}-${user.id.substring(0, 8)}`, // Internal reference
                     status: "ACTIVE",
-                    roiRate: 1.0, // 1% daily ROI
+                    roiRate: tier.rate, // Tiered ROI rate
                     approvalMethod: "WALLET",
                 }
             });
@@ -82,7 +91,7 @@ export async function POST(req: Request) {
                     userId: user.id,
                     type: "INVESTMENT",
                     amount: depositAmount,
-                    description: `Package activated from wallet balance - 1% Daily ROI started`,
+                    description: `Package activated from wallet balance — ${tier.label} started`,
                     status: "COMPLETED",
                     previousBalance: Number(user.balance),
                     newBalance: Number(user.balance) - depositAmount
@@ -101,7 +110,7 @@ export async function POST(req: Request) {
             const isFirstPackage = previousInvestments === 0;
 
             return NextResponse.json({
-                message: "✅ Package activated from wallet! 1% daily ROI has started.",
+                message: `✅ Package activated from wallet! ${tier.rate}% daily ROI (${tier.label}) has started.`,
                 investmentId: investment.id,
                 verified: true,
                 amount: depositAmount,
@@ -178,7 +187,7 @@ export async function POST(req: Request) {
                     amount: depositAmount,
                     txid: txid,
                     status: "PENDING", // Always pending - requires manual approval
-                    roiRate: 1.0,
+                    roiRate: getROIRate(depositAmount).rate, // Pre-stamp tier rate (confirmed at approval)
                 }
             });
 

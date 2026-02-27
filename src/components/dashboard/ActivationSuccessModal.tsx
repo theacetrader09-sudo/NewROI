@@ -12,9 +12,10 @@ interface ActivationSuccessModalProps {
 
 // ── Tiered ROI helper (matches the same logic in approve/route.ts) ──────────
 function getTier(amount: number): { rate: number; label: string; color: string } {
-    if (amount >= 25000) return { rate: 5, label: "🏆 Platinum", color: "#F59E0B" };
-    if (amount >= 10000) return { rate: 2, label: "⭐ Gold", color: "#818CF8" };
-    return { rate: 1, label: "Standard", color: "#4ADE80" };
+    if (amount >= 30000) return { rate: 5, label: "💎 Diamond", color: "#F59E0B" };
+    if (amount >= 10000) return { rate: 2, label: "🥇 Gold", color: "#818CF8" };
+    if (amount >= 1000) return { rate: 1, label: "🥈 Silver", color: "#60A5FA" };
+    return { rate: 0.5, label: "🥉 Bronze", color: "#4ADE80" };
 }
 
 export default function ActivationSuccessModal({

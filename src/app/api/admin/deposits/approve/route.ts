@@ -70,22 +70,26 @@ export async function PATCH(req: Request) {
                 const depositAmount = Number(investment.amount);
 
                 // 2. ── TIERED ROI RATE ──────────────────────────────────────────
-                // Rule: >= $25,000 → 5%/day | >= $10,000 → 2%/day | default → 1%/day
+                // Bronze:  $35–$999      → 0.5%/day
+                // Silver:  $1,000–$9,999 → 1%/day
+                // Gold:    $10,000–$29,999 → 2%/day
+                // Diamond: $30,000+      → 5%/day
                 // The rate is permanently stamped on this investment at approval.
                 let roiRate: number;
                 let tierLabel: string;
 
-                if (depositAmount >= 25000) {
+                if (depositAmount >= 30000) {
                     roiRate = 5.00;   // 5% per day
-                    tierLabel = "Platinum (5%/day)";
+                    tierLabel = "Diamond (5%/day)";
                 } else if (depositAmount >= 10000) {
                     roiRate = 2.00;   // 2% per day
                     tierLabel = "Gold (2%/day)";
+                } else if (depositAmount >= 1000) {
+                    roiRate = 1.00;   // 1% per day
+                    tierLabel = "Silver (1%/day)";
                 } else {
-                    // Fetch system default from settings (falls back to 1%)
-                    const settings = await tx.systemSettings.findFirst();
-                    roiRate = settings ? Number(settings.dailyRoiPercent) : 1.00;
-                    tierLabel = `Standard (${roiRate}%/day)`;
+                    roiRate = 0.50;   // 0.5% per day
+                    tierLabel = "Bronze (0.5%/day)";
                 }
 
                 // 3. Update Investment: ACTIVE + correct roiRate stamped
