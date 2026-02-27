@@ -13,15 +13,21 @@ export async function GET(req: Request) {
 
         // Check if this is a manual trigger (from admin panel)
         const isManual = searchParams.get("manual") === "true";
-        // TESTING: Force re-run to allow double credit for same day (remove after testing)
-        const forceRerun = searchParams.get("force") === "true";
+
+        // forceRerun requires a SEPARATE force secret to prevent accidental double-credits
+        // Only set FORCE_SECRET in env when you explicitly need to re-run for a missed day
+        const forceSecret = searchParams.get("force_secret");
+        const forceRerun = forceSecret !== undefined &&
+            forceSecret === process.env.FORCE_SECRET &&
+            process.env.FORCE_SECRET !== undefined;
 
         const result = await distributeDailyROI(isManual, forceRerun);
 
         return NextResponse.json({
             success: true,
             message: `ROI Distributed for ${result.date}`,
-            details: result
+            details: result,
+            forceRerun: forceRerun
         });
 
     } catch (error: any) {

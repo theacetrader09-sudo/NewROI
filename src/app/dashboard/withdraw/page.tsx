@@ -20,7 +20,7 @@ export default function WithdrawPage() {
 
     const NETWORK_FEE_PERCENT = 0.20; // 0.20% network fee
     const PLATFORM_FEE_PERCENT = 5;    // 5% platform fee
-    const MIN_WITHDRAW = 10;
+    const MIN_WITHDRAW = 20;
 
     useEffect(() => {
         fetchProfile();
@@ -70,7 +70,7 @@ export default function WithdrawPage() {
 
         const numAmount = parseFloat(amount);
         if (numAmount < MIN_WITHDRAW) {
-            setMessage({ type: "error", text: `Minimum withdrawal is $${MIN_WITHDRAW}` });
+            setMessage({ type: "error", text: "Minimum withdrawal is $20" });
             setLoading(false);
             return;
         }
