@@ -4,10 +4,9 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import ApproveWithdrawalButton from "@/components/admin/ApproveWithdrawalButton";
 
-// Fee constants (must match verify route)
-const PLATFORM_FEE_PERCENT = 5;
-const NETWORK_FEE_PERCENT = 0.20;
-const TOTAL_FEE_PERCENT = PLATFORM_FEE_PERCENT + NETWORK_FEE_PERCENT; // 5.20%
+// Fee constants (must match withdrawal routes)
+const PLATFORM_FEE_PERCENT = 5;       // 5% platform fee
+const NETWORK_FEE_FIXED = 0.29;       // $0.29 fixed network fee
 
 export default async function AdminWithdrawalsPage() {
     const session = await getServerSession(authOptions);
@@ -53,11 +52,11 @@ export default async function AdminWithdrawalsPage() {
                             </tr>
                         ) : (
                             pendingWithdrawals.map((tx) => {
-                                // tx.amount = net payout stored at request time
-                                const netPayout = Number(tx.amount);
-                                const originalAmount = netPayout / (1 - TOTAL_FEE_PERCENT / 100);
-                                const platformFee = (originalAmount * PLATFORM_FEE_PERCENT) / 100;
-                                const networkFee = (originalAmount * NETWORK_FEE_PERCENT) / 100;
+                                // tx.amount = ORIGINAL requested amount (stored since latest fix)
+                                const requestedAmount = Number(tx.amount);
+                                const platformFee = (requestedAmount * PLATFORM_FEE_PERCENT) / 100;
+                                const networkFee = NETWORK_FEE_FIXED;
+                                const netPayout = requestedAmount - platformFee - networkFee;
 
                                 return (
                                     <tr key={tx.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
@@ -68,7 +67,7 @@ export default async function AdminWithdrawalsPage() {
                                         {/* User requested this gross amount */}
                                         <td style={{ padding: '16px 24px' }}>
                                             <div style={{ fontWeight: '700', color: 'var(--accent-red)' }}>
-                                                ${originalAmount.toFixed(2)}
+                                                ${requestedAmount.toFixed(2)}
                                             </div>
                                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                                                 Platform: -${platformFee.toFixed(2)} | Network: -${networkFee.toFixed(2)}
@@ -80,7 +79,7 @@ export default async function AdminWithdrawalsPage() {
                                                 ${netPayout.toFixed(2)} USDT
                                             </div>
                                             <div style={{ fontSize: '0.7rem', color: '#86efac', marginTop: '2px' }}>
-                                                After 5% + 0.20% fees
+                                                After 5% + $0.29 fees
                                             </div>
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>
