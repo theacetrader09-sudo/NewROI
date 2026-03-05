@@ -101,33 +101,14 @@ export async function GET(req: Request) {
             skip: offset,
         });
 
-        // Map transactions to include displayAmount for proper withdrawal display
-        // For withdrawals, we show the amount user requested, not the fee-deducted amount
-        const mappedTransactions = transactions.map(tx => {
-            if (tx.type === 'WITHDRAWAL') {
-                // Reverse engineer the original requested amount
-                // Formula: net = requested - (requested * 0.05) - 0.29
-                // Simplify: net = requested * 0.95 - 0.29
-                // Solve: requested = (net + 0.29) / 0.95
-                const netAmount = Number(tx.amount);
-                const originalAmount = (netAmount + 0.29) / 0.95;
-
-                return {
-                    ...tx,
-                    amount: tx.amount,
-                    displayAmount: originalAmount, // What user requested
-                    netAmount: netAmount // What they'll receive (for reference)
-                };
-            }
-
-            // For all other transaction types, displayAmount = amount
-            return {
-                ...tx,
-                amount: tx.amount,
-                displayAmount: Number(tx.amount),
-                netAmount: Number(tx.amount)
-            };
-        });
+        // All transaction types now store the correct display amount directly
+        // Withdrawals store the original requested amount (not net after fees)
+        const mappedTransactions = transactions.map(tx => ({
+            ...tx,
+            amount: tx.amount,
+            displayAmount: Number(tx.amount),
+            netAmount: Number(tx.amount)
+        }));
 
         const totalPages = Math.ceil(totalCount / limit);
         const hasMore = page * limit < totalCount;

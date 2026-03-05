@@ -65,10 +65,10 @@ export async function POST(req: Request) {
             data: {
                 userId: user.id,
                 type: "WITHDRAWAL",
-                amount: netPayoutAmount, // NET amount admin should pay
+                amount: withdrawAmount, // Store ORIGINAL requested amount for clean display
                 previousBalance: Number(user.balance),
                 newBalance: Number(user.balance), // Balance unchanged until admin approval
-                description: `Withdraw requested - ${user.email} | Platform fee: $${platformFee.toFixed(2)} (5%) | Network fee: $${networkFee.toFixed(2)} (0.20%)`,
+                description: `Withdraw requested - ${user.email} | Net payout: $${netPayoutAmount.toFixed(2)} (after 5% platform + $0.29 network fee)`,
                 status: "PENDING",
                 referenceId: walletAddress,
             }
