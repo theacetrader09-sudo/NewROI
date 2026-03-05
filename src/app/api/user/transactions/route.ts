@@ -77,19 +77,17 @@ export async function GET(req: Request) {
         // Build where clause
         const whereClause: any = {
             userId: (session.user as any).id,
-            ...(type && { type: type as any }),
-            // If user has active investments, hide MISSED_ROI from general history
-            // If user is inactive, they might still want to see them here?
-            // Requirement: "Hidden from the main transaction history after the user activates a package"
-            // So if activeInvestmentsCount > 0, exclude MISSED_ROI
-            ...(activeInvestmentsCount > 0 ? {
-                type: { notIn: ["FEE", "MISSED_ROI"] }
-            } : {
-                // If inactive, just hide FEE (MISSED_ROI will be visible)
-                type: { not: "FEE" }
-            }),
             ...dateCondition
         };
+
+        // Apply type filter OR exclude internal types - never let them conflict
+        if (type) {
+            // User selected a specific tab - show ONLY that type
+            whereClause.type = type as any;
+        } else {
+            // No filter selected (ALL tab) - hide internal/noise types
+            whereClause.type = { notIn: ["FEE", "MISSED_ROI", "INVESTMENT"] };
+        }
 
         // Get total count for pagination
         const totalCount = await prisma.transaction.count({

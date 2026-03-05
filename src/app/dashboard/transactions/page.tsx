@@ -186,7 +186,7 @@ export default function TransactionsPage() {
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const typeFilters = ["ALL", "DEPOSIT", "ROI", "WITHDRAWAL"];
+    const typeFilters = ["ALL", "DEPOSIT", "ROI", "COMMISSION", "WITHDRAWAL"];
     const dateRanges: { value: DateRange; label: string }[] = [
         { value: 'ALL', label: 'All Time' },
         { value: 'TODAY', label: 'Today' },
