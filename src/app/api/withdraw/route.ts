@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 const MIN_WITHDRAWAL = 20;
-const PLATFORM_FEE_PERCENT = 5; // 5% platform fee
+const PLATFORM_FEE_PERCENT = 5;    // 5% platform fee
+const NETWORK_FEE_PERCENT = 0.20;  // 0.20% network fee
 
 export async function POST(req: Request) {
     try {
@@ -48,9 +49,9 @@ export async function POST(req: Request) {
             }, { status: 400 });
         }
 
-        // Calculate fees
+        // Calculate fees from the requested amount only
         const platformFee = (withdrawAmount * PLATFORM_FEE_PERCENT) / 100;
-        const networkFee = 0.29;
+        const networkFee = (withdrawAmount * NETWORK_FEE_PERCENT) / 100;
         const netPayoutAmount = withdrawAmount - platformFee - networkFee;
 
         // ✅ CREATE PENDING REQUEST WITHOUT DEDUCTING BALANCE
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
                 amount: withdrawAmount, // Store ORIGINAL requested amount for clean display
                 previousBalance: Number(user.balance),
                 newBalance: Number(user.balance), // Balance NOT changed yet
-                description: `Withdraw requested - ${user.email} | Net payout: $${netPayoutAmount.toFixed(2)} (after 5% platform + $0.29 network fee)`,
+                description: `Withdraw requested - ${user.email} | Net payout: $${netPayoutAmount.toFixed(2)} (after 5% platform + 0.20% network fee)`,
                 status: "PENDING",
                 referenceId: walletAddress, // Store destination wallet
             }

@@ -6,7 +6,7 @@ import ApproveWithdrawalButton from "@/components/admin/ApproveWithdrawalButton"
 
 // Fee constants (must match withdrawal routes)
 const PLATFORM_FEE_PERCENT = 5;       // 5% platform fee
-const NETWORK_FEE_FIXED = 0.29;       // $0.29 fixed network fee
+const NETWORK_FEE_PERCENT = 0.20;     // 0.20% network fee
 
 export default async function AdminWithdrawalsPage() {
     const session = await getServerSession(authOptions);
@@ -55,7 +55,7 @@ export default async function AdminWithdrawalsPage() {
                                 // tx.amount = ORIGINAL requested amount (stored since latest fix)
                                 const requestedAmount = Number(tx.amount);
                                 const platformFee = (requestedAmount * PLATFORM_FEE_PERCENT) / 100;
-                                const networkFee = NETWORK_FEE_FIXED;
+                                const networkFee = (requestedAmount * NETWORK_FEE_PERCENT) / 100;
                                 const netPayout = requestedAmount - platformFee - networkFee;
 
                                 return (
@@ -79,7 +79,7 @@ export default async function AdminWithdrawalsPage() {
                                                 ${netPayout.toFixed(2)} USDT
                                             </div>
                                             <div style={{ fontSize: '0.7rem', color: '#86efac', marginTop: '2px' }}>
-                                                After 5% + $0.29 fees
+                                                After 5% platform + 0.20% network fee
                                             </div>
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>

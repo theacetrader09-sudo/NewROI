@@ -55,7 +55,7 @@ export async function POST(req: Request) {
             }, { status: 400 });
         }
 
-        // Calculate fees
+        // Calculate fees from the requested amount only
         const platformFee = (withdrawAmount * PLATFORM_FEE_PERCENT) / 100;
         const networkFee = (withdrawAmount * NETWORK_FEE_PERCENT) / 100;
         const netPayoutAmount = withdrawAmount - platformFee - networkFee;
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
                 amount: withdrawAmount, // Store ORIGINAL requested amount for clean display
                 previousBalance: Number(user.balance),
                 newBalance: Number(user.balance), // Balance unchanged until admin approval
-                description: `Withdraw requested - ${user.email} | Net payout: $${netPayoutAmount.toFixed(2)} (after 5% platform + $0.29 network fee)`,
+                description: `Withdraw requested - ${user.email} | Net payout: $${netPayoutAmount.toFixed(2)} (after 5% platform + 0.20% network fee)`,
                 status: "PENDING",
                 referenceId: walletAddress,
             }
