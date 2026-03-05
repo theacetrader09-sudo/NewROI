@@ -23,18 +23,15 @@ export async function PATCH(req: Request) {
                 throw new Error("Invalid transaction or already processed");
             }
 
-            // ─── Fee constants (must match withdraw/verify/route.ts) ───
+            // ─── Fee constants (must match withdraw routes) ───
             const PLATFORM_FEE_PERCENT = 5;    // 5%
-            const NETWORK_FEE_PERCENT = 0.20; // 0.20%
-            const TOTAL_FEE_PERCENT = PLATFORM_FEE_PERCENT + NETWORK_FEE_PERCENT; // 5.20%
+            const NETWORK_FEE_PERCENT = 0.20;  // 0.20%
 
-            // tx.amount = net payout (after fees), stored at request time.
-            // Reverse-calculate the original gross amount the user requested.
-            // net = gross × (1 - totalFee%)  →  gross = net / (1 - totalFee%)
-            const netPayout = Number(transaction.amount);
-            const originalAmount = netPayout / (1 - TOTAL_FEE_PERCENT / 100);
+            // tx.amount = ORIGINAL requested amount (stored since latest fix)
+            const originalAmount = Number(transaction.amount);
             const platformFee = (originalAmount * PLATFORM_FEE_PERCENT) / 100;
             const networkFee = (originalAmount * NETWORK_FEE_PERCENT) / 100;
+            const netPayout = originalAmount - platformFee - networkFee;
 
             // Check user still has sufficient balance
             const user = await tx.user.findUnique({

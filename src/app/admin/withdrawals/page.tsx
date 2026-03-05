@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import ApproveWithdrawalButton from "@/components/admin/ApproveWithdrawalButton";
+import RejectWithdrawalButton from "@/components/admin/RejectWithdrawalButton";
 
 // Fee constants (must match withdrawal routes)
 const PLATFORM_FEE_PERCENT = 5;       // 5% platform fee
@@ -110,7 +111,10 @@ export default async function AdminWithdrawalsPage() {
                                                 </span>
                                             </td>
                                             <td style={tdStyle}>
-                                                <ApproveWithdrawalButton id={tx.id} />
+                                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                    <ApproveWithdrawalButton id={tx.id} />
+                                                    <RejectWithdrawalButton id={tx.id} />
+                                                </div>
                                             </td>
                                         </tr>
                                     );
