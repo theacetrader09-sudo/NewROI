@@ -33,6 +33,7 @@ model User {
   transactions Transaction[]
   roiLogs      RoiLog[]
   otps         OTP[]
+  loginLogs    LoginLog[]
 
   @@index([email])
   @@index([referralCode])
@@ -144,4 +145,26 @@ model OTP {
   @@index([userId, type])
   @@index([code])
   @@index([expiresAt])
+}
+
+model LoginLog {
+  id        String   @id @default(cuid())
+  userId    String
+  ip        String?
+  country   String?
+  countryCode String?
+  city      String?
+  region    String?
+  timezone  String?
+  isp       String?
+  latitude  Float?
+  longitude Float?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([ip])
 }

@@ -48,6 +48,8 @@ function LoginForm() {
                     setNeedsVerification(true);
                 }
             } else {
+                // 🔐 Log the login (IP + geo) — fire and forget, never blocks UX
+                fetch("/api/auth/log-login", { method: "POST" }).catch(() => { });
                 router.push("/dashboard");
             }
         } catch (err) {
