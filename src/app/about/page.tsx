@@ -38,10 +38,10 @@ const levels = [
 
 // ─── Packages ─────────────────────────────────────────────────────────────────
 const packages = [
-    { label: "Bronze", range: "$35 – $999", roi: "0.5%", color: "#4ADE80", glow: "rgba(74,222,128,0.06)", icon: "🥉" },
-    { label: "Silver", range: "$1,000 – $9,999", roi: "1%", color: "#60A5FA", glow: "rgba(96,165,250,0.07)", icon: "🥈" },
-    { label: "Gold", range: "$10,000 – $29,999", roi: "2%", color: "#818eff", glow: "rgba(129,142,255,0.09)", icon: "🥇" },
-    { label: "Diamond", range: "$30,000 – $999,999", roi: "5%", color: "#F59E0B", glow: "rgba(245,158,11,0.07)", icon: "💎" },
+    { label: "Tier 1", range: "$35 – $999", roi: "1%", color: "#4ADE80", glow: "rgba(74,222,128,0.06)", icon: "🟢" },
+    { label: "Tier 2", range: "$1,000 – $5,999", roi: "1.5%", color: "#60A5FA", glow: "rgba(96,165,250,0.07)", icon: "🔵" },
+    { label: "Tier 3", range: "$6,000 – $29,000", roi: "2%", color: "#818eff", glow: "rgba(129,142,255,0.09)", icon: "💜" },
+    { label: "Tier 4", range: "$30,000 – $999,999", roi: "5%", color: "#F59E0B", glow: "rgba(245,158,11,0.07)", icon: "⚡" },
 ];
 
 // ─── Responsive Document Viewer Modal ────────────────────────────────────────
@@ -270,7 +270,7 @@ export default function AboutPage() {
                     </h2>
                     <div className="space-y-5 text-base sm:text-lg text-white/55 leading-relaxed">
                         <p>For too long, only institutions held the advantage — speed, data, and control. NeoQuant envisions a world where everyday traders can earn daily returns effortlessly.</p>
-                        <p>With Bronze, Silver, Gold and Diamond packages creating growth for all investor levels. A world where sharing the system strengthens entire communities through a ten-level income structure.</p>
+                        <p>With four investment tiers — from $35 entry to $999,999 — creating growth for all investor levels. A world where sharing the system strengthens entire communities through a ten-level income structure.</p>
                         <p className="text-white/80 font-medium text-lg sm:text-xl">A future where success is no longer reserved for the few, but awakened in the many.</p>
                     </div>
                 </div>
