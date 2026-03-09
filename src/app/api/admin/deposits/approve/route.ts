@@ -70,26 +70,26 @@ export async function PATCH(req: Request) {
                 const depositAmount = Number(investment.amount);
 
                 // 2. ── TIERED ROI RATE ──────────────────────────────────────────
-                // Bronze:  $35–$999      → 0.5%/day
-                // Silver:  $1,000–$9,999 → 1%/day
-                // Gold:    $10,000–$29,999 → 2%/day
-                // Diamond: $30,000+      → 5%/day
+                // Tier 1:  $35–$999        → 1%/day
+                // Tier 2:  $1,000–$5,999   → 1.5%/day
+                // Tier 3:  $6,000–$29,000  → 2%/day
+                // Tier 4:  $30,000–$999,999 → 5%/day
                 // The rate is permanently stamped on this investment at approval.
                 let roiRate: number;
                 let tierLabel: string;
 
                 if (depositAmount >= 30000) {
                     roiRate = 5.00;   // 5% per day
-                    tierLabel = "Diamond (5%/day)";
-                } else if (depositAmount >= 10000) {
+                    tierLabel = "Tier 4 (5%/day)";
+                } else if (depositAmount >= 6000) {
                     roiRate = 2.00;   // 2% per day
-                    tierLabel = "Gold (2%/day)";
+                    tierLabel = "Tier 3 (2%/day)";
                 } else if (depositAmount >= 1000) {
-                    roiRate = 1.00;   // 1% per day
-                    tierLabel = "Silver (1%/day)";
+                    roiRate = 1.50;   // 1.5% per day
+                    tierLabel = "Tier 2 (1.5%/day)";
                 } else {
-                    roiRate = 0.50;   // 0.5% per day
-                    tierLabel = "Bronze (0.5%/day)";
+                    roiRate = 1.00;   // 1% per day
+                    tierLabel = "Tier 1 (1%/day)";
                 }
 
                 // 3. Update Investment: ACTIVE + correct roiRate stamped

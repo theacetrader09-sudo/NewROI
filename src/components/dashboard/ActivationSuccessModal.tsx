@@ -12,10 +12,10 @@ interface ActivationSuccessModalProps {
 
 // ── Tiered ROI helper (matches the same logic in approve/route.ts) ──────────
 function getTier(amount: number): { rate: number; label: string; color: string } {
-    if (amount >= 30000) return { rate: 5, label: "💎 Diamond", color: "#F59E0B" };
-    if (amount >= 10000) return { rate: 2, label: "🥇 Gold", color: "#818CF8" };
-    if (amount >= 1000) return { rate: 1, label: "🥈 Silver", color: "#60A5FA" };
-    return { rate: 0.5, label: "🥉 Bronze", color: "#4ADE80" };
+    if (amount >= 30000) return { rate: 5, label: "⚡ Tier 4", color: "#F59E0B" };
+    if (amount >= 6000) return { rate: 2, label: "💜 Tier 3", color: "#818CF8" };
+    if (amount >= 1000) return { rate: 1.5, label: "🔵 Tier 2", color: "#60A5FA" };
+    return { rate: 1, label: "🟢 Tier 1", color: "#4ADE80" };
 }
 
 export default function ActivationSuccessModal({
@@ -88,11 +88,11 @@ export default function ActivationSuccessModal({
                                     {tier.rate}% daily ROI
                                 </span>{" "}
                                 starts tomorrow.
-                                {investmentAmount >= 10000 && (
+                                {investmentAmount >= 6000 && (
                                     <span className="block text-sm text-white/60 mt-1">
-                                        {investmentAmount >= 25000
-                                            ? "🏆 Platinum investor — maximum earnings unlocked!"
-                                            : "⭐ Gold investor — enhanced earnings unlocked!"}
+                                        {investmentAmount >= 30000
+                                            ? "🏆 Tier 4 — Maximum 5% daily earnings!"
+                                            : "⭐ Tier 3 — 2% daily earnings unlocked!"}
                                     </span>
                                 )}
                                 {" "}Build your network to maximize earnings!

@@ -251,20 +251,20 @@ export default function ModernDashboard() {
                         </h3>
                         <span className="text-[10px] font-bold" style={{
                             color: Number(user.activeRoiRate) >= 5
-                                ? '#F59E0B'  // gold/amber for Diamond 5%
+                                ? '#F59E0B'  // amber for Tier 4 (5%)
                                 : Number(user.activeRoiRate) >= 2
-                                    ? '#818CF8'  // indigo for Gold 2%
-                                    : Number(user.activeRoiRate) >= 1
-                                        ? '#60A5FA'  // blue for Silver 1%
-                                        : '#4ADE80'  // green for Bronze 0.5%
+                                    ? '#818CF8'  // indigo for Tier 3 (2%)
+                                    : Number(user.activeRoiRate) >= 1.5
+                                        ? '#60A5FA'  // blue for Tier 2 (1.5%)
+                                        : '#4ADE80'  // green for Tier 1 (1%)
                         }}>
                             {Number(user.activeRoiRate) >= 5
-                                ? '💎 Diamond'
+                                ? '⚡ Tier 4'
                                 : Number(user.activeRoiRate) >= 2
-                                    ? '🥇 Gold'
-                                    : Number(user.activeRoiRate) >= 1
-                                        ? '🥈 Silver'
-                                        : '🥉 Bronze'}
+                                    ? '💜 Tier 3'
+                                    : Number(user.activeRoiRate) >= 1.5
+                                        ? '🔵 Tier 2'
+                                        : '🟢 Tier 1'}
                         </span>
                     </div>
                 </div>

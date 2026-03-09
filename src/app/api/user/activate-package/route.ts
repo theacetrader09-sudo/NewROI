@@ -5,7 +5,15 @@ import prisma from "@/lib/prisma";
 
 // Level Commission Config
 const LEVEL_COMMISSIONS = [0.06, 0.05, 0.02, 0.02, 0.01, 0.01, 0.005, 0.005, 0.0025, 0.001];
-const MIN_ACTIVATION_AMOUNT = 100;
+const MIN_ACTIVATION_AMOUNT = 35;
+
+// Tiered ROI rates
+function getTieredRoiRate(amount: number): number {
+    if (amount >= 30000) return 5.00;  // Tier 4: 5%/day
+    if (amount >= 6000) return 2.00;  // Tier 3: 2%/day
+    if (amount >= 1000) return 1.50;  // Tier 2: 1.5%/day
+    return 1.00;                       // Tier 1: 1%/day
+}
 
 export async function POST(req: Request) {
     try {
@@ -54,7 +62,7 @@ export async function POST(req: Request) {
                 data: {
                     userId: user.id,
                     amount: activationAmount,
-                    roiRate: 1.0, // 1% daily
+                    roiRate: getTieredRoiRate(activationAmount),
                     status: "ACTIVE",
                 },
             });
@@ -76,7 +84,7 @@ export async function POST(req: Request) {
                     amount: activationAmount,
                     previousBalance: prevBalance,
                     newBalance: newBalance,
-                    description: `Package activated: $${activationAmount} - 1% Daily ROI started`,
+                    description: `Package activated: $${activationAmount} - ${getTieredRoiRate(activationAmount)}% Daily ROI started`,
                     status: "COMPLETED",
                     referenceId: investment.id,
                 },

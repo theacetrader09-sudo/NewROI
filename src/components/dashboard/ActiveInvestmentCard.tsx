@@ -15,10 +15,10 @@ export default function ActiveInvestmentCard({ user }: ActiveInvestmentCardProps
     const growthProgress = stakedAmount > 0 ? (totalProfit / stakedAmount) * 100 : 0;
     const hasActiveInvestment = stakedAmount > 0;
 
-    // Tiered ROI rate
+    // Tiered ROI rate labels
     const roiRate = Number(user.activeRoiRate || 1);
-    const tierLabel = roiRate >= 5 ? '🏆 Platinum' : roiRate >= 2 ? '⭐ Gold' : 'Standard';
-    const tierColor = roiRate >= 5 ? '#F59E0B' : roiRate >= 2 ? '#818CF8' : '#4ADE80';
+    const tierLabel = roiRate >= 5 ? '⚡ Tier 4' : roiRate >= 2 ? '💜 Tier 3' : roiRate >= 1.5 ? '🔵 Tier 2' : '🟢 Tier 1';
+    const tierColor = roiRate >= 5 ? '#F59E0B' : roiRate >= 2 ? '#818CF8' : roiRate >= 1.5 ? '#60A5FA' : '#4ADE80';
 
     // Animate progress bar on mount
     useEffect(() => {
