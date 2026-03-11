@@ -193,121 +193,6 @@ export default function NetworkPage() {
 
             {/* Content */}
             <div className="flex-grow flex flex-col px-4 space-y-6">
-                {/* Lifestyle Income Progress Card */}
-                {lifestyleProgress && (
-                    <div
-                        className="rounded-2xl p-5 border relative overflow-hidden"
-                        style={{
-                            background: lifestyleProgress.lifestyleQualified
-                                ? 'linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05))'
-                                : 'linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.03))',
-                            borderColor: lifestyleProgress.lifestyleQualified
-                                ? 'rgba(234,179,8,0.3)' : 'rgba(139,92,246,0.2)'
-                        }}
-                    >
-                        <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full blur-2xl"
-                            style={{ background: lifestyleProgress.lifestyleQualified ? 'rgba(234,179,8,0.2)' : 'rgba(139,92,246,0.2)' }} />
-                        <div className="relative z-10">
-                            {/* Header */}
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <p className="text-xs font-bold tracking-widest uppercase mb-1"
-                                        style={{ color: lifestyleProgress.lifestyleQualified ? '#eab308' : '#a78bfa' }}>
-                                        ⭐ Lifestyle Income
-                                    </p>
-                                    <h3 className="text-white font-bold text-base">
-                                        {lifestyleProgress.lifestyleQualified ? '✅ Qualified — $2,800/month' : 'Progress to $2,800/month'}
-                                    </h3>
-                                </div>
-                                {lifestyleProgress.lifestyleQualified && (
-                                    <div className="text-3xl">🏆</div>
-                                )}
-                            </div>
-
-                            {lifestyleProgress.lifestyleQualified ? (
-                                <div className="rounded-xl p-4 text-center"
-                                    style={{ background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.2)' }}>
-                                    <p className="text-yellow-400 font-bold text-lg">🎉 Lifetime Qualified!</p>
-                                    <p className="text-white/60 text-xs mt-1">You receive $2,800 every month — forever.</p>
-                                    {lifestyleProgress.lifestyleQualifiedAt && (
-                                        <p className="text-white/40 text-xs mt-1">
-                                            Achieved: {new Date(lifestyleProgress.lifestyleQualifiedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                                        </p>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {/* Power Leg */}
-                                    <div>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-xs text-white/60">⚡ Power Leg (strongest)</span>
-                                            <span className="text-xs font-bold text-white">
-                                                ${Math.round(lifestyleProgress.powerLegBV).toLocaleString()} / $19,200
-                                            </span>
-                                        </div>
-                                        <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                                            <div className="h-full rounded-full transition-all duration-700"
-                                                style={{
-                                                    width: `${Math.min((lifestyleProgress.powerLegBV / 19200) * 100, 100)}%`,
-                                                    background: lifestyleProgress.powerLegBV >= 19200 ? '#eab308' : 'linear-gradient(90deg, #8b5cf6, #a78bfa)',
-                                                    boxShadow: '0 0 8px rgba(139,92,246,0.5)'
-                                                }} />
-                                        </div>
-                                        {lifestyleProgress.powerLegNeeded > 0 && (
-                                            <p className="text-[10px] text-purple-400 mt-0.5">
-                                                ${Math.round(lifestyleProgress.powerLegNeeded).toLocaleString()} more needed
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Short Leg */}
-                                    <div>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-xs text-white/60">🔗 Short Leg (all others)</span>
-                                            <span className="text-xs font-bold text-white">
-                                                ${Math.round(lifestyleProgress.shortLegBV).toLocaleString()} / $28,800
-                                            </span>
-                                        </div>
-                                        <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                                            <div className="h-full rounded-full transition-all duration-700"
-                                                style={{
-                                                    width: `${Math.min((lifestyleProgress.shortLegBV / 28800) * 100, 100)}%`,
-                                                    background: lifestyleProgress.shortLegBV >= 28800 ? '#eab308' : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
-                                                    boxShadow: '0 0 8px rgba(99,102,241,0.5)'
-                                                }} />
-                                        </div>
-                                        {lifestyleProgress.shortLegNeeded > 0 && (
-                                            <p className="text-[10px] text-indigo-400 mt-0.5">
-                                                ${Math.round(lifestyleProgress.shortLegNeeded).toLocaleString()} more needed
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Total */}
-                                    <div className="pt-2 border-t border-white/10">
-                                        <div className="flex justify-between text-xs">
-                                            <span className="text-white/50">Total Business Volume</span>
-                                            <span className="font-bold text-white">
-                                                ${Math.round(lifestyleProgress.totalBV).toLocaleString()} / $48,000
-                                            </span>
-                                        </div>
-                                        <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mt-1">
-                                            <div className="h-full rounded-full"
-                                                style={{
-                                                    width: `${Math.min((lifestyleProgress.totalBV / 48000) * 100, 100)}%`,
-                                                    background: 'linear-gradient(90deg, #eab308, #f59e0b)'
-                                                }} />
-                                        </div>
-                                        <p className="text-[10px] text-white/40 mt-1">
-                                            ${Math.round(Math.max(0, 48000 - lifestyleProgress.totalBV)).toLocaleString()} remaining to unlock $2,800/month lifetime income
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
                 {/* Referral Code Card */}
                 <div
                     className="flex flex-col rounded-2xl p-5 border border-white/5 relative overflow-hidden group"
@@ -337,6 +222,83 @@ export default function NetworkPage() {
                         </button>
                     </div>
                 </div>
+
+                {/* Lifestyle Income Progress Card */}
+                {lifestyleProgress && (
+                    <div
+                        className="rounded-2xl p-5 border relative overflow-hidden"
+                        style={{
+                            background: lifestyleProgress.lifestyleQualified
+                                ? 'linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05))'
+                                : 'linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.03))',
+                            borderColor: lifestyleProgress.lifestyleQualified
+                                ? 'rgba(234,179,8,0.3)' : 'rgba(139,92,246,0.2)'
+                        }}
+                    >
+                        <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full blur-2xl"
+                            style={{ background: lifestyleProgress.lifestyleQualified ? 'rgba(234,179,8,0.2)' : 'rgba(139,92,246,0.2)' }} />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <p className="text-xs font-bold tracking-widest uppercase mb-1"
+                                        style={{ color: lifestyleProgress.lifestyleQualified ? '#eab308' : '#a78bfa' }}>
+                                        ⭐ Lifestyle Income
+                                    </p>
+                                    <h3 className="text-white font-bold text-base">
+                                        {lifestyleProgress.lifestyleQualified ? '✅ Qualified — $2,800/month' : 'Progress to $2,800/month'}
+                                    </h3>
+                                </div>
+                                {lifestyleProgress.lifestyleQualified && <div className="text-3xl">🏆</div>}
+                            </div>
+
+                            {lifestyleProgress.lifestyleQualified ? (
+                                <div className="rounded-xl p-4 text-center"
+                                    style={{ background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.2)' }}>
+                                    <p className="text-yellow-400 font-bold text-lg">🎉 Lifetime Qualified!</p>
+                                    <p className="text-white/60 text-xs mt-1">You receive $2,800 every month — forever.</p>
+                                    {lifestyleProgress.lifestyleQualifiedAt && (
+                                        <p className="text-white/40 text-xs mt-1">Achieved: {new Date(lifestyleProgress.lifestyleQualifiedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-xs text-white/60">⚡ Power Leg</span>
+                                            <span className="text-xs font-bold text-white">${Math.round(lifestyleProgress.powerLegBV).toLocaleString()} / $19,200</span>
+                                        </div>
+                                        <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                                            <div className="h-full rounded-full transition-all duration-700"
+                                                style={{ width: `${Math.min((lifestyleProgress.powerLegBV / 19200) * 100, 100)}%`, background: lifestyleProgress.powerLegBV >= 19200 ? '#eab308' : 'linear-gradient(90deg, #8b5cf6, #a78bfa)', boxShadow: '0 0 8px rgba(139,92,246,0.5)' }} />
+                                        </div>
+                                        {lifestyleProgress.powerLegNeeded > 0 && <p className="text-[10px] text-purple-400 mt-0.5">${Math.round(lifestyleProgress.powerLegNeeded).toLocaleString()} more needed</p>}
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-xs text-white/60">🔗 Short Leg</span>
+                                            <span className="text-xs font-bold text-white">${Math.round(lifestyleProgress.shortLegBV).toLocaleString()} / $28,800</span>
+                                        </div>
+                                        <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                                            <div className="h-full rounded-full transition-all duration-700"
+                                                style={{ width: `${Math.min((lifestyleProgress.shortLegBV / 28800) * 100, 100)}%`, background: lifestyleProgress.shortLegBV >= 28800 ? '#eab308' : 'linear-gradient(90deg, #6366f1, #8b5cf6)', boxShadow: '0 0 8px rgba(99,102,241,0.5)' }} />
+                                        </div>
+                                        {lifestyleProgress.shortLegNeeded > 0 && <p className="text-[10px] text-indigo-400 mt-0.5">${Math.round(lifestyleProgress.shortLegNeeded).toLocaleString()} more needed</p>}
+                                    </div>
+                                    <div className="pt-2 border-t border-white/10">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-white/50">Total Business Volume</span>
+                                            <span className="font-bold text-white">${Math.round(lifestyleProgress.totalBV).toLocaleString()} / $48,000</span>
+                                        </div>
+                                        <div className="h-1.5 rounded-full bg-white/5 overflow-hidden mt-1">
+                                            <div className="h-full rounded-full" style={{ width: `${Math.min((lifestyleProgress.totalBV / 48000) * 100, 100)}%`, background: 'linear-gradient(90deg, #eab308, #f59e0b)' }} />
+                                        </div>
+                                        <p className="text-[10px] text-white/40 mt-1">${Math.round(Math.max(0, 48000 - lifestyleProgress.totalBV)).toLocaleString()} remaining to unlock $2,800/month lifetime income</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Your Team Section */}
                 <div>
