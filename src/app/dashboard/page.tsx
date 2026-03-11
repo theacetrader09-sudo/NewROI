@@ -157,6 +157,45 @@ export default function ModernDashboard() {
                 </button>
             </header>
 
+            {/* Referral Share Card */}
+            {referralCode && (
+                <section className="px-5 pt-2 pb-0">
+                    <div
+                        className="rounded-2xl p-4 border relative overflow-hidden"
+                        style={{ background: 'rgba(139,92,246,0.08)', borderColor: 'rgba(139,92,246,0.2)' }}
+                    >
+                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-purple-600/20 rounded-full blur-xl" />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-purple-400">🔗 Your Referral Link</p>
+                                    <p className="text-white/50 text-xs mt-0.5 truncate max-w-[200px]">/register?ref={referralCode}</p>
+                                </div>
+                                <Link href="/dashboard/network" className="text-xs text-purple-400 font-bold">Network →</Link>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleRefCopy}
+                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl h-10 text-xs font-bold transition-colors"
+                                    style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' }}
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                    {refCopied ? '✅ Copied!' : 'Copy Link'}
+                                </button>
+                                <button
+                                    onClick={handleRefShare}
+                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl h-10 text-xs font-bold text-white transition-colors"
+                                    style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', boxShadow: '0 4px 12px rgba(139,92,246,0.3)' }}
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                                    Share Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* Total Assets Card */}
             <section className="px-6 py-4">
                 <div
@@ -300,45 +339,6 @@ export default function ModernDashboard() {
                     </div>
                 </div>
             </section>
-
-            {/* Referral Share Card */}
-            {referralCode && (
-                <section className="px-6 pb-2">
-                    <div
-                        className="rounded-2xl p-4 border relative overflow-hidden"
-                        style={{ background: 'rgba(139,92,246,0.08)', borderColor: 'rgba(139,92,246,0.2)' }}
-                    >
-                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-purple-600/20 rounded-full blur-xl" />
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-purple-400">🔗 Your Referral Link</p>
-                                    <p className="text-white/50 text-xs mt-0.5 truncate max-w-[180px]">/register?ref={referralCode}</p>
-                                </div>
-                                <Link href="/dashboard/network" className="text-xs text-purple-400 font-bold">View Network →</Link>
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleRefCopy}
-                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl h-10 text-xs font-bold transition-colors"
-                                    style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' }}
-                                >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                    {refCopied ? '✅ Copied!' : 'Copy Link'}
-                                </button>
-                                <button
-                                    onClick={handleRefShare}
-                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl h-10 text-xs font-bold text-white transition-colors"
-                                    style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', boxShadow: '0 4px 12px rgba(139,92,246,0.3)' }}
-                                >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                                    Share Now
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )}
 
             {/* New Missed ROI and Level Progress Cards */}
             <section className="grid grid-cols-2 gap-4 px-6 mt-4">
