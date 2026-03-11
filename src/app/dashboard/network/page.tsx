@@ -24,6 +24,7 @@ export default function NetworkPage() {
     const [activeTab, setActiveTab] = useState<'total' | 'income' | 'successful'>('income');
     const [levelProgress, setLevelProgress] = useState<any>(null);
     const [lifestyleProgress, setLifestyleProgress] = useState<any>(null);
+    const [lifestyleLoading, setLifestyleLoading] = useState(true);
 
     useEffect(() => {
         fetchUserProfile();
@@ -115,6 +116,8 @@ export default function NetworkPage() {
             }
         } catch (err) {
             console.error("Failed to fetch lifestyle progress:", err);
+        } finally {
+            setLifestyleLoading(false);
         }
     };
 
@@ -224,7 +227,25 @@ export default function NetworkPage() {
                 </div>
 
                 {/* Lifestyle Income Progress Card */}
-                {lifestyleProgress && (
+                {lifestyleLoading ? (
+                    /* Skeleton while BV is calculating */
+                    <div className="rounded-2xl p-5 border relative overflow-hidden"
+                        style={{ background: 'rgba(139,92,246,0.05)', borderColor: 'rgba(139,92,246,0.15)' }}>
+                        <div className="animate-pulse space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="h-2.5 w-24 rounded-full bg-white/10 mb-2" />
+                                    <div className="h-4 w-40 rounded-full bg-white/10" />
+                                </div>
+                            </div>
+                            <div className="space-y-2 pt-1">
+                                <div className="h-2 w-full rounded-full bg-white/5" />
+                                <div className="h-2 w-full rounded-full bg-white/5" />
+                                <div className="h-2 w-3/4 rounded-full bg-white/5" />
+                            </div>
+                        </div>
+                    </div>
+                ) : lifestyleProgress && (
                     <div
                         className="rounded-2xl p-5 border relative overflow-hidden"
                         style={{
