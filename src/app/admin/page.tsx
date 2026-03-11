@@ -12,6 +12,7 @@ import {
     Megaphone
 } from "lucide-react";
 import ManualRoiButton from "@/components/admin/ManualRoiButton";
+import LifestyleIncomeButton from "@/components/admin/LifestyleIncomeButton";
 
 export default async function AdminDashboard() {
     const session = await getServerSession(authOptions);
@@ -130,6 +131,7 @@ export default async function AdminDashboard() {
                         </div>
                         <div style={{ marginTop: '20px' }}>
                             <ManualRoiButton />
+                            <LifestyleIncomeButton />
                         </div>
                     </div>
                 </div>
