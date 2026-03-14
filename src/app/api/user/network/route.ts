@@ -35,7 +35,6 @@ export async function GET() {
 
         // Build tree in memory (much faster than recursive DB calls)
         function buildTree(parentId: string, currentLevel: number): any[] {
-            if (currentLevel > 10) return [];
 
             const children = allUsers.filter(u => u.uplineId === parentId);
 
