@@ -171,9 +171,10 @@ export default function NetworkPage() {
         });
     };
 
-    const filteredMembers = activeTab === 'successful'
+    const filteredMembers = (activeTab === 'successful'
         ? networkData.filter(m => m.totalInvested > 0)
-        : networkData;
+        : networkData
+    ).sort((a, b) => a.level - b.level);
 
     return (
         <div
