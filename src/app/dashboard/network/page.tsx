@@ -55,8 +55,8 @@ export default function NetworkPage() {
                 let totalEarnings = 0;
 
                 // Commission rates per level (as percentage of ROI)
-                // Level 1: 10%, Level 2: 5%, Level 3: 3%, Level 4: 2%, Level 5: 1%
-                const commissionRates = [0.10, 0.05, 0.03, 0.02, 0.01];
+                // Level 1: 10%, Level 2: 5%, Level 3: 3%, Level 4: 2%, Level 5-10: 1%, Level 11+: 0%
+                const commissionRates = [0.10, 0.05, 0.03, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01];
 
                 const traverse = (nodes: any[], level: number = 1) => {
                     nodes.forEach(node => {
@@ -64,7 +64,7 @@ export default function NetworkPage() {
                         // Commission is based on ROI (1% of investment), then level percentage of that
                         const investedAmount = Number(node.invested || 0);
                         const estimatedDailyRoi = investedAmount * 0.01; // 1% daily ROI
-                        const commissionRate = commissionRates[level - 1] || 0.01; // Default to 1% for levels beyond 5
+                        const commissionRate = commissionRates[level - 1] ?? 0; // 0% for levels beyond 10
                         const commission = estimatedDailyRoi * commissionRate;
                         totalEarnings += commission;
                         members.push({
@@ -599,7 +599,7 @@ export default function NetworkPage() {
                                                 </svg>
                                                 <p className="text-xs text-gray-300">
                                                     <span className="font-bold">
-                                                        {member.level === 1 ? '10%' : member.level === 2 ? '5%' : member.level === 3 ? '3%' : member.level === 4 ? '2%' : '1%'} Commission
+                                                        {member.level > 10 ? 'No Income — Depth View Only' : member.level === 1 ? '10%' : member.level === 2 ? '5%' : member.level === 3 ? '3%' : member.level === 4 ? '2%' : '1%'} {member.level <= 10 ? 'Commission' : ''}
                                                     </span> from ${dailyRoi.toFixed(2)} daily ROI
                                                 </p>
                                             </div>
