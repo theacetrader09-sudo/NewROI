@@ -262,8 +262,8 @@ export default function DepositPage() {
                         </button>
                     </div>
 
-                    {/* Recipient Toggle — only for package activations */}
-                    {depositMode === 'package' && (
+                    {/* Recipient Toggle — only for package activations, only in localhost testing */}
+                    {depositMode === 'package' && process.env.NEXT_PUBLIC_ONBEHALF_DEPOSIT === 'true' && (
                         <div className="flex flex-col gap-3">
                             <div className="flex gap-2">
                                 <button
