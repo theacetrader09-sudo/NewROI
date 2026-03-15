@@ -32,7 +32,8 @@ model User {
   upline    User?  @relation("Referrals", fields: [uplineId], references: [id])
   referrals User[] @relation("Referrals")
   
-  investments  Investment[]
+  investments  Investment[] @relation("InvestmentOwner")
+  paidInvestments Investment[] @relation("InvestmentPaidBy")
   transactions Transaction[]
   roiLogs      RoiLog[]
   otps         OTP[]
@@ -52,10 +53,14 @@ model Investment {
   txid           String?  @unique
   approvalMethod String?  // AUTO, MANUAL - tracks how deposit was approved
   
+  paidById       String?  // ID of upline who paid on behalf
+  onBehalf       Boolean  @default(false) // true = activated by upline
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User      @relation(fields: [userId], references: [id])
+  user    User      @relation("InvestmentOwner", fields: [userId], references: [id])
+  paidBy  User?     @relation("InvestmentPaidBy", fields: [paidById], references: [id])
   roiLogs RoiLog[]
 
   @@index([userId])

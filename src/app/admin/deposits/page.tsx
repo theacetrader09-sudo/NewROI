@@ -14,7 +14,7 @@ export default async function AdminDepositsPage() {
     // Fetch pending deposits (both package investments and wallet deposits)
     const pendingInvestments = await prisma.investment.findMany({
         where: { status: "PENDING" },
-        include: { user: true },
+        include: { user: true, paidBy: true },
         orderBy: { createdAt: 'desc' }
     });
 
@@ -65,6 +65,15 @@ export default async function AdminDepositsPage() {
                                     <div>
                                         <div style={{ fontWeight: '700', fontSize: '1rem' }}>{dep.user.name}</div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{dep.user.email}</div>
+                                        {'onBehalf' in dep && (dep as any).onBehalf && (dep as any).paidBy && (
+                                            <div style={{
+                                                marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                                background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)',
+                                                borderRadius: '8px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: '700', color: '#fbbf24'
+                                            }}>
+                                                🔗 On Behalf — Paid by: {(dep as any).paidBy.name || (dep as any).paidBy.email}
+                                            </div>
+                                        )}
                                     </div>
                                     <div style={{
                                         fontSize: '1.2rem',

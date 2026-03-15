@@ -20,7 +20,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { amount, txid, depositMode, paymentMethod } = await req.json();
+        const { amount, txid, depositMode, paymentMethod, onBehalfOf } = await req.json();
 
         // depositMode: "wallet" = add to balance only, "package" = create investment for ROI
         // paymentMethod: "usdt" = external USDT transfer, "wallet_balance" = use existing wallet balance
@@ -183,11 +183,12 @@ export async function POST(req: Request) {
 
             const investment = await prisma.investment.create({
                 data: {
-                    userId: user.id,
+                    userId: onBehalfOf || user.id,   // Package goes to downline (or self)
                     amount: depositAmount,
                     txid: txid,
-                    status: "PENDING", // Always pending - requires manual approval
-                    roiRate: getROIRate(depositAmount).rate, // Pre-stamp tier rate (confirmed at approval)
+                    status: "PENDING",
+                    roiRate: getROIRate(depositAmount).rate,
+                    ...(onBehalfOf && { paidById: user.id, onBehalf: true }),
                 }
             });
 

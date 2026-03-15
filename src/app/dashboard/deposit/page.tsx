@@ -19,7 +19,14 @@ export default function DepositPage() {
     const [message, setMessage] = useState({ type: "", text: "" });
     const [copied, setCopied] = useState(false);
     const [balance, setBalance] = useState(0);
-    const [adminWallet, setAdminWallet] = useState("0x15C1eC04D1Db26ff82d66b0654790335292BdB66"); // Default fallback
+    const [adminWallet, setAdminWallet] = useState("0x15C1eC04D1Db26ff82d66b0654790335292BdB66");
+
+    // On-behalf deposit state
+    const [recipientMode, setRecipientMode] = useState<'self' | 'downline'>('self');
+    const [downlineEmail, setDownlineEmail] = useState("");
+    const [verifyingDownline, setVerifyingDownline] = useState(false);
+    const [verifiedDownline, setVerifiedDownline] = useState<{ id: string; name: string; email: string; hasActivePackage: boolean } | null>(null);
+    const [downlineError, setDownlineError] = useState("");
 
     const PROCESSING_FEE = paymentMethod === 'wallet_balance' ? 0 : 1.00;
 
@@ -71,6 +78,23 @@ export default function DepositPage() {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleVerifyDownline = async () => {
+        setVerifyingDownline(true);
+        setDownlineError("");
+        setVerifiedDownline(null);
+        try {
+            const res = await fetch("/api/user/verify-downline", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: downlineEmail }),
+            });
+            const data = await res.json();
+            if (!res.ok) { setDownlineError(data.error || "Verification failed"); return; }
+            setVerifiedDownline(data);
+        } catch { setDownlineError("Network error. Try again."); }
+        finally { setVerifyingDownline(false); }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -106,7 +130,8 @@ export default function DepositPage() {
                     amount,
                     txid: paymentMethod === 'usdt' ? txid : null,
                     depositMode,
-                    paymentMethod
+                    paymentMethod,
+                    ...(recipientMode === 'downline' && verifiedDownline ? { onBehalfOf: verifiedDownline.id } : {}),
                 }),
             });
 
@@ -236,6 +261,74 @@ export default function DepositPage() {
                             Activate Package
                         </button>
                     </div>
+
+                    {/* Recipient Toggle — only for package activations */}
+                    {depositMode === 'package' && (
+                        <div className="flex flex-col gap-3">
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => { setRecipientMode('self'); setVerifiedDownline(null); setDownlineEmail(''); setDownlineError(''); }}
+                                    className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${recipientMode === 'self' ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/30' : 'bg-white/5 border-white/10 text-white/60'}`}
+                                >
+                                    👤 My Package
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setRecipientMode('downline')}
+                                    className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${recipientMode === 'downline' ? 'bg-amber-600 border-amber-500 text-white shadow-lg shadow-amber-600/30' : 'bg-white/5 border-white/10 text-white/60'}`}
+                                >
+                                    🔗 Downline Package
+                                </button>
+                            </div>
+
+                            {/* Downline email input */}
+                            {recipientMode === 'downline' && (
+                                <div className="rounded-xl p-4 border border-amber-500/20" style={{ background: 'rgba(251,191,36,0.05)' }}>
+                                    <p className="text-amber-400 text-[10px] font-bold uppercase tracking-widest mb-3">
+                                        🔗 Activate Downline's Package
+                                    </p>
+                                    {!verifiedDownline ? (
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="email"
+                                                    placeholder="Enter downline's email"
+                                                    value={downlineEmail}
+                                                    onChange={e => setDownlineEmail(e.target.value)}
+                                                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm placeholder:text-white/30 outline-none focus:border-amber-500/50"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleVerifyDownline}
+                                                    disabled={verifyingDownline || !downlineEmail}
+                                                    className="px-4 py-2.5 rounded-lg text-xs font-bold text-amber-950 transition-all disabled:opacity-50"
+                                                    style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+                                                >
+                                                    {verifyingDownline ? '...' : 'Verify'}
+                                                </button>
+                                            </div>
+                                            {downlineError && (
+                                                <p className="text-red-400 text-xs">{downlineError}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-white font-bold text-sm">{verifiedDownline.name}</p>
+                                                <p className="text-white/50 text-xs">{verifiedDownline.email}</p>
+                                                {verifiedDownline.hasActivePackage && (
+                                                    <p className="text-amber-400 text-[10px] mt-1">⚠️ Already has an active package</p>
+                                                )}
+                                            </div>
+                                            <button type="button" onClick={() => { setVerifiedDownline(null); setDownlineEmail(''); }}
+                                                className="text-xs text-white/40 hover:text-red-400 transition-colors">✕ Change</button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Package Section - Only show for package mode */}
                     {depositMode === 'package' && (
