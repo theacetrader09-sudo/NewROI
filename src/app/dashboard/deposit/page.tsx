@@ -275,7 +275,10 @@ export default function DepositPage() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setRecipientMode('downline')}
+                                    onClick={() => {
+                                        setRecipientMode('downline');
+                                        setPaymentMethod('usdt'); // Force USDT for downline
+                                    }}
                                     className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${recipientMode === 'downline' ? 'bg-amber-600 border-amber-500 text-white shadow-lg shadow-amber-600/30' : 'bg-white/5 border-white/10 text-white/60'}`}
                                 >
                                     🔗 Downline Package
@@ -481,8 +484,8 @@ export default function DepositPage() {
                                 )}
                             </button>
 
-                            {/* Wallet Balance Option - Only show for package mode */}
-                            {depositMode === 'package' && (
+                            {/* Wallet Balance Option - Only show for personal package mode (Downline must use USDT) */}
+                            {depositMode === 'package' && recipientMode === 'self' && (
                                 <button
                                     onClick={() => setPaymentMethod('wallet_balance')}
                                     disabled={balance < 35}

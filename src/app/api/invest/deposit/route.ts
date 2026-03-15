@@ -35,6 +35,11 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
         }
 
+        // On-behalf activations MUST use USDT (fresh credit)
+        if (onBehalfOf && paymentMethod === 'wallet_balance') {
+            return NextResponse.json({ error: "On-behalf activations are only allowed via USDT" }, { status: 400 });
+        }
+
         // Minimum deposit validation
         if (depositAmount < 35) {
             return NextResponse.json({ error: "Minimum amount is $35" }, { status: 400 });
