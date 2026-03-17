@@ -130,7 +130,7 @@ export default function HelpPage() {
 
                     <div className="space-y-3">
                         <a
-                            href="https://t.me/neoquantfinance"
+                            href="https://t.me/neoquantsupport"
                             target="_blank"
                             className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 transition-colors"
                         >
