@@ -128,6 +128,18 @@ export async function PATCH(req: Request) {
                 return NextResponse.json({ message: `✅ Email updated to ${normalizedEmail}. User has been logged out and must sign in with the new email.` });
             }
 
+            case "CHANGE_NAME": {
+                const { newName } = data;
+                if (!newName || !newName.trim()) {
+                    return NextResponse.json({ error: "Name cannot be empty" }, { status: 400 });
+                }
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: { name: newName.trim() }
+                });
+                return NextResponse.json({ message: `✅ Name updated to "${newName.trim()}" successfully.` });
+            }
+
             default:
                 return NextResponse.json({ error: "Invalid action" }, { status: 400 });
         }

@@ -20,6 +20,7 @@ export default function UserEditPage() {
     const [newPassword, setNewPassword] = useState("");
     const [newUpline, setNewUpline] = useState("");
     const [newEmail, setNewEmail] = useState("");
+    const [newName, setNewName] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -65,6 +66,7 @@ export default function UserEditPage() {
             setNewPassword("");
             setNewUpline("");
             setNewEmail("");
+            setNewName("");
         } catch (err: any) {
             setMessage({ type: "error", text: err.message });
         } finally {
@@ -114,7 +116,8 @@ export default function UserEditPage() {
                     { id: "balance", label: "Balance", icon: <DollarSign size={16} /> },
                     { id: "password", label: "Password", icon: <Key size={16} /> },
                     { id: "upline", label: "Upline", icon: <UserPlus size={16} /> },
-                    { id: "email", label: "Email", icon: <span style={{ fontSize: '14px' }}>✉️</span> }
+                    { id: "email", label: "Email", icon: <span style={{ fontSize: '14px' }}>✉️</span> },
+                    { id: "name", label: "Name", icon: <span style={{ fontSize: '14px' }}>✏️</span> }
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -275,6 +278,33 @@ export default function UserEditPage() {
                             style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}
                         >
                             {submitting ? "Updating..." : "Update Email & Force Logout"}
+                        </button>
+                    </div>
+                )}
+
+                {activeTab === "name" && (
+                    <div>
+                        <h3 style={{ marginBottom: '8px' }}>Change Display Name</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                            Current name: <strong>{user.name || "Not set"}</strong>
+                        </p>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>New Name</label>
+                            <input
+                                type="text"
+                                placeholder="Enter new display name"
+                                style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--glass-border)', color: 'white', padding: '12px', borderRadius: '8px', outline: 'none' }}
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            onClick={() => handleEdit("CHANGE_NAME", { newName })}
+                            disabled={submitting || !newName.trim()}
+                            className="btn btn-primary"
+                            style={{ width: '100%', padding: '14px' }}
+                        >
+                            {submitting ? "Updating..." : "Update Name"}
                         </button>
                     </div>
                 )}
