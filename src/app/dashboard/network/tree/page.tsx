@@ -271,7 +271,7 @@ export default function NetworkTreePage() {
         });
     };
 
-    const zoomIn = () => setScale(s => Math.min(s + 0.2, 4));
+    const zoomIn = () => setScale(s => Math.min(s + 0.2, 7));
     const zoomOut = () => setScale(s => Math.max(s - 0.2, 0.2));
     const resetView = () => {
         setScale(1);
