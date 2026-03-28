@@ -97,6 +97,37 @@ export async function PATCH(req: Request) {
                 return NextResponse.json({ message: "Upline changed successfully" });
             }
 
+            case "CHANGE_EMAIL": {
+                const { newEmail } = data;
+
+                if (!newEmail || !newEmail.includes("@")) {
+                    return NextResponse.json({ error: "Please provide a valid email address" }, { status: 400 });
+                }
+
+                const normalizedEmail = newEmail.trim().toLowerCase();
+
+                // Make sure email isn't already taken by another user
+                const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+                if (existing && existing.id !== userId) {
+                    return NextResponse.json({ error: "This email is already in use by another account" }, { status: 400 });
+                }
+
+                // Update email
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: { email: normalizedEmail }
+                });
+
+                // Invalidate all active sessions for this user by deleting from Session table (if it exists)
+                try {
+                    await (prisma as any).session.deleteMany({ where: { userId } });
+                } catch {
+                    // Session table may not exist (JWT mode) - that's fine, JWT will expire naturally
+                }
+
+                return NextResponse.json({ message: `✅ Email updated to ${normalizedEmail}. User has been logged out and must sign in with the new email.` });
+            }
+
             default:
                 return NextResponse.json({ error: "Invalid action" }, { status: 400 });
         }

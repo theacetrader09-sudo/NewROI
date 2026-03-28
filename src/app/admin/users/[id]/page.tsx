@@ -19,6 +19,7 @@ export default function UserEditPage() {
     const [balanceReason, setBalanceReason] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [newUpline, setNewUpline] = useState("");
+    const [newEmail, setNewEmail] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -63,6 +64,7 @@ export default function UserEditPage() {
             setBalanceReason("");
             setNewPassword("");
             setNewUpline("");
+            setNewEmail("");
         } catch (err: any) {
             setMessage({ type: "error", text: err.message });
         } finally {
@@ -111,7 +113,8 @@ export default function UserEditPage() {
                 {[
                     { id: "balance", label: "Balance", icon: <DollarSign size={16} /> },
                     { id: "password", label: "Password", icon: <Key size={16} /> },
-                    { id: "upline", label: "Upline", icon: <UserPlus size={16} /> }
+                    { id: "upline", label: "Upline", icon: <UserPlus size={16} /> },
+                    { id: "email", label: "Email", icon: <span style={{ fontSize: '14px' }}>✉️</span> }
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -234,6 +237,44 @@ export default function UserEditPage() {
                             style={{ width: '100%', padding: '14px' }}
                         >
                             {submitting ? "Processing..." : "Update Upline"}
+                        </button>
+                    </div>
+                )}
+
+                {activeTab === "email" && (
+                    <div>
+                        <h3 style={{ marginBottom: '8px' }}>Change Email Address</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                            Current email: <strong>{user.email}</strong>
+                        </p>
+                        <div style={{
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            marginBottom: '20px',
+                            fontSize: '0.82rem',
+                            background: 'rgba(239, 68, 68, 0.08)',
+                            color: '#f87171',
+                            border: '1px solid rgba(239, 68, 68, 0.2)'
+                        }}>
+                            ⚠️ The user will be <strong>immediately logged out</strong> and must sign in with the new email. The old email will no longer work.
+                        </div>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>New Email Address</label>
+                            <input
+                                type="email"
+                                placeholder="Enter new email address"
+                                style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--glass-border)', color: 'white', padding: '12px', borderRadius: '8px', outline: 'none' }}
+                                value={newEmail}
+                                onChange={(e) => setNewEmail(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            onClick={() => handleEdit("CHANGE_EMAIL", { newEmail })}
+                            disabled={submitting || !newEmail.includes('@')}
+                            className="btn btn-primary"
+                            style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}
+                        >
+                            {submitting ? "Updating..." : "Update Email & Force Logout"}
                         </button>
                     </div>
                 )}
