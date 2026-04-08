@@ -369,10 +369,10 @@ export default function DepositPage() {
                                     <div>
                                         <span className="text-white/50 block mb-0.5">ROI</span>
                                         <span className="text-white font-bold text-sm">
-                                            {Number(amount) >= 30000 ? '5%' : Number(amount) >= 6000 ? '2%' : Number(amount) >= 1000 ? '1.5%' : '1%'}
+                                            {Number(amount) >= 5000 ? '1%' : '0.5%'}
                                         </span>
-                                        <span className="text-[9px] ml-0.5" style={{ color: Number(amount) >= 30000 ? '#F59E0B' : Number(amount) >= 6000 ? '#818CF8' : Number(amount) >= 1000 ? '#60A5FA' : '#4ADE80' }}>
-                                            {Number(amount) >= 30000 ? '⚡' : Number(amount) >= 6000 ? '💜' : Number(amount) >= 1000 ? '🔵' : '🟢'}
+                                        <span className="text-[9px] ml-0.5" style={{ color: Number(amount) >= 5000 ? '#818CF8' : '#4ADE80' }}>
+                                            {Number(amount) >= 5000 ? '💎' : '🟢'}
                                         </span>
                                     </div>
                                     <div className="w-px h-6 bg-white/10" />

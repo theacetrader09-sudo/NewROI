@@ -11,7 +11,7 @@ interface FAQ {
 const faqs: FAQ[] = [
     {
         question: "How does the daily ROI work?",
-        answer: "Your daily ROI depends on your investment amount: 🥉 Bronze ($35–$999) earns 0.5%/day, 🥈 Silver ($1,000–$9,999) earns 1%/day, 🥇 Gold ($10,000–$29,999) earns 2%/day, and 💎 Diamond ($30,000+) earns 5%/day. ROI is automatically credited to your wallet every 24 hours."
+        answer: "Your daily ROI depends on your investment amount: 🟢 Package 1 ($35–$4,999) earns 0.5%/day, 💎 Package 2 ($5,000–$200,000) earns 1%/day. ROI is automatically credited to your wallet every 24 hours."
     },
     {
         question: "What is the minimum deposit amount?",

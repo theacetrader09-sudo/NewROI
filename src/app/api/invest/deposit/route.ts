@@ -6,10 +6,8 @@ import { isValidTxHash } from "@/lib/bscscan";
 
 // ── Shared tier helper (mirrors approve/route.ts) ───────────────────────
 function getROIRate(amount: number): { rate: number; label: string } {
-    if (amount >= 30000) return { rate: 5.00, label: "Diamond (5%/day)" };
-    if (amount >= 10000) return { rate: 2.00, label: "Gold (2%/day)" };
-    if (amount >= 1000) return { rate: 1.00, label: "Silver (1%/day)" };
-    return { rate: 0.50, label: "Bronze (0.5%/day)" };
+    if (amount >= 5000) return { rate: 1.00, label: "Package 2 (1%/day)" };
+    return { rate: 0.50, label: "Package 1 (0.5%/day)" };
 }
 
 export async function POST(req: Request) {

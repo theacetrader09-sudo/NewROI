@@ -9,10 +9,8 @@ const MIN_ACTIVATION_AMOUNT = 35;
 
 // Tiered ROI rates
 function getTieredRoiRate(amount: number): number {
-    if (amount >= 30000) return 5.00;  // Tier 4: 5%/day
-    if (amount >= 6000) return 2.00;  // Tier 3: 2%/day
-    if (amount >= 1000) return 1.50;  // Tier 2: 1.5%/day
-    return 1.00;                       // Tier 1: 1%/day
+    if (amount >= 5000) return 1.00;  // Package 2: 1%/day
+    return 0.50;                       // Package 1: 0.5%/day
 }
 
 export async function POST(req: Request) {

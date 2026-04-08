@@ -72,24 +72,17 @@ export async function PATCH(req: Request) {
                 // 2. ── TIERED ROI RATE ──────────────────────────────────────────
                 // Tier 1:  $35–$999        → 1%/day
                 // Tier 2:  $1,000–$5,999   → 1.5%/day
-                // Tier 3:  $6,000–$29,000  → 2%/day
-                // Tier 4:  $30,000–$999,999 → 5%/day
-                // The rate is permanently stamped on this investment at approval.
+                // Package 1: $35–$4,999 → 0.5%/day
+                // Package 2: $5,000–$200,000 → 1%/day
                 let roiRate: number;
                 let tierLabel: string;
 
-                if (depositAmount >= 30000) {
-                    roiRate = 5.00;   // 5% per day
-                    tierLabel = "Tier 4 (5%/day)";
-                } else if (depositAmount >= 6000) {
-                    roiRate = 2.00;   // 2% per day
-                    tierLabel = "Tier 3 (2%/day)";
-                } else if (depositAmount >= 1000) {
-                    roiRate = 1.50;   // 1.5% per day
-                    tierLabel = "Tier 2 (1.5%/day)";
+                if (depositAmount >= 5000) {
+                    roiRate = 1.00;
+                    tierLabel = "Package 2 (1%/day)";
                 } else {
-                    roiRate = 1.00;   // 1% per day
-                    tierLabel = "Tier 1 (1%/day)";
+                    roiRate = 0.50;
+                    tierLabel = "Package 1 (0.5%/day)";
                 }
 
                 // 3. Update Investment: ACTIVE + correct roiRate stamped
