@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-const MIN_WITHDRAWAL = 20;
+const MIN_WITHDRAWAL = 15;
 const PLATFORM_FEE_PERCENT = 5;    // 5% platform fee
 const NETWORK_FEE_PERCENT = 0.20;  // 0.20% network fee
 

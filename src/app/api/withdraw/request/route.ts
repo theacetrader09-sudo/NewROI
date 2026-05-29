@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { createOTP } from "@/lib/otp";
 import { sendWithdrawalOTP } from "@/lib/email";
 
-const MIN_WITHDRAWAL = 20;
+const MIN_WITHDRAWAL = 15;
 const PLATFORM_FEE_PERCENT = 5; // 5% platform fee
 
 export async function POST(req: Request) {

@@ -353,7 +353,7 @@ export default function AboutPage() {
                             </motion.div>
                         ))}
                     </div>
-                    <p className="text-center text-white/25 text-xs mt-6">Minimum withdrawal: $20 USDT • Fees: 5% platform + 0.20% network</p>
+                    <p className="text-center text-white/25 text-xs mt-6">Minimum withdrawal: $15 USDT • Fees: 5% platform + 0.20% network</p>
                 </div>
             </Section>
 
